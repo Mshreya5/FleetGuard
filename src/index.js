@@ -1,23 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './App.jsx';
 
-// Global body styles applied via JavaScript — no CSS file
 document.body.style.margin = '0';
 document.body.style.padding = '0';
 document.body.style.fontFamily = "'Inter', 'Segoe UI', sans-serif";
 document.body.style.backgroundColor = '#050810';
 document.body.style.color = '#F0F6FF';
 document.body.style.webkitFontSmoothing = 'antialiased';
-document.documentElement.style.scrollBehavior = 'smooth';
 
-// Inject Inter font via JS
 const link = document.createElement('link');
 link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap';
 link.rel = 'stylesheet';
 document.head.appendChild(link);
 
-// Inject global keyframe animations via JS
 const style = document.createElement('style');
 style.textContent = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -145,7 +141,6 @@ style.textContent = `
   }
   .fg-logo-icon { transition: box-shadow 0.25s ease, transform 0.25s ease; }
 
-  /* Responsive utilities */
   .fg-desktop-nav { display: flex; }
   .fg-mobile-only { display: none; }
   .fg-mobile-only-block { display: block; }

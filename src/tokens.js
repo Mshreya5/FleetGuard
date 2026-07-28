@@ -1,40 +1,22 @@
-/**
- * FleetGuard Design Tokens
- * ─────────────────────────────────────────────────────────────
- * Single source of truth for all design decisions.
- * Import this file in any component to stay consistent.
- */
-
 export const COLORS = {
-  // ── Brand Blues ──────────────────────────────────────────────
-  primary:       '#4A90E2',   // Main CTA blue
-  primaryDark:   '#2563EB',   // Hover state for primary
-  primaryLight:  '#60A5FA',   // Accent text, highlights
-  blueSoft:      '#93C5FD',   // Subtitle text, soft accents
-  blueMid:       '#1D4ED8',   // Deep button hover
-  blueDeep:      '#1E3A5F',   // Overlay tint on backgrounds
-  blueGlow:      '#3B82F6',   // Glow effects
-
-  // ── Backgrounds ──────────────────────────────────────────────
-  bg:            '#050810',   // Page background (near black)
-  bgAlt:         '#080D18',   // Alternate section background
-  card:          '#0D1526',   // Card surface
-  cardHover:     '#111D35',   // Card hover surface
-
-  // ── Borders ──────────────────────────────────────────────────
-  border:        '#1E2D4A',   // Default border
-  borderBlue:    '#2563EB',   // Active / focused border
-
-  // ── Text ─────────────────────────────────────────────────────
-  textPrimary:   '#F0F6FF',   // Headings, primary content
-  textSecondary: '#94A3B8',   // Body text, descriptions
-
-  // ── Status (dashboard use only) ──────────────────────────────
+  primary:       '#4A90E2',
+  primaryDark:   '#2563EB',
+  primaryLight:  '#60A5FA',
+  blueSoft:      '#93C5FD',
+  blueMid:       '#1D4ED8',
+  blueDeep:      '#1E3A5F',
+  blueGlow:      '#3B82F6',
+  bg:            '#050810',
+  bgAlt:         '#080D18',
+  card:          '#0D1526',
+  cardHover:     '#111D35',
+  border:        '#1E2D4A',
+  borderBlue:    '#2563EB',
+  textPrimary:   '#F0F6FF',
+  textSecondary: '#94A3B8',
   success:       '#22C55E',
   warning:       '#F59E0B',
   danger:        '#EF4444',
-
-  // ── Utility ──────────────────────────────────────────────────
   white:         '#FFFFFF',
   transparent:   'transparent',
 };
@@ -58,11 +40,11 @@ export const RADIUS = {
 export const FONT = {
   family: "'Inter', 'Segoe UI', sans-serif",
   size: {
-    xs:  '11px',
-    sm:  '13px',
-    base:'15px',
-    lg:  '18px',
-    xl:  '22px',
+    xs:   '11px',
+    sm:   '13px',
+    base: '15px',
+    lg:   '18px',
+    xl:   '22px',
     '2xl':'28px',
     '3xl':'36px',
     '4xl':'48px',
