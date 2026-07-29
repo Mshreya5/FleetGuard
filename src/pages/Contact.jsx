@@ -5,16 +5,20 @@ import Footer from '../components/Footer';
 import { COLORS, SHADOWS, RADIUS, FONT, SPACING } from '../tokens';
 
 const contactInfo = [
-  { icon: Mail,   label: 'Email',   value: 'support@fleetguard.io' },
-  { icon: Phone,  label: 'Phone',   value: '+1 (800) 555-0199' },
+  { icon: Mail, label: 'Email', value: 'support@fleetguard.io' },
+  { icon: Phone, label: 'Phone', value: '+1 (800) 555-0199' },
   { icon: MapPin, label: 'Address', value: '123 Fleet Avenue, Austin, TX 78701' },
 ];
 
 const inputStyle = {
-  width: '100%', padding: `${SPACING[3]} ${SPACING[4]}`,
-  background: 'rgba(5,8,16,0.6)', border: `1px solid ${COLORS.border}`,
-  borderRadius: RADIUS.btn, color: COLORS.textPrimary,
-  fontSize: FONT.size.sm, outline: 'none',
+  width: '100%',
+  padding: `${SPACING[3]} ${SPACING[4]}`,
+  background: 'rgba(5,8,16,0.6)',
+  border: `1px solid ${COLORS.border}`,
+  borderRadius: RADIUS.btn,
+  color: COLORS.textPrimary,
+  fontSize: FONT.size.sm,
+  outline: 'none',
   boxSizing: 'border-box',
 };
 
@@ -55,11 +59,7 @@ export default function Contact() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: SPACING[4] }}>
                 {contactInfo.map(({ icon: Icon, label, value }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: SPACING[4] }}>
-                    <div style={{
-                      width: '44px', height: '44px', borderRadius: RADIUS.btn, flexShrink: 0,
-                      background: 'rgba(74,144,226,0.1)', border: `1px solid rgba(74,144,226,0.2)`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: RADIUS.btn, flexShrink: 0, background: 'rgba(74,144,226,0.1)', border: '1px solid rgba(74,144,226,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icon size={18} color={COLORS.primary} strokeWidth={1.8} />
                     </div>
                     <div>
@@ -71,14 +71,10 @@ export default function Contact() {
               </div>
             </div>
 
-            <div style={{
-              background: 'rgba(13,21,38,0.8)', backdropFilter: 'blur(20px)',
-              border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.lg,
-              padding: SPACING[8], boxShadow: SHADOWS.card,
-            }}>
+            <div style={{ background: 'rgba(13,21,38,0.8)', backdropFilter: 'blur(20px)', border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.lg, padding: SPACING[8], boxShadow: SHADOWS.card }}>
               {sent ? (
                 <div style={{ textAlign: 'center', padding: `${SPACING[8]} 0` }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', border: `1px solid rgba(34,197,94,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', marginBottom: SPACING[4] }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', marginBottom: SPACING[4] }}>
                     <Send size={22} color={COLORS.success} />
                   </div>
                   <h3 style={{ fontSize: FONT.size.lg, fontWeight: FONT.weight.semibold, color: COLORS.textPrimary, marginBottom: SPACING[2] }}>Message Sent!</h3>
@@ -88,43 +84,17 @@ export default function Contact() {
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: SPACING[4] }}>
                   <div>
                     <label style={{ display: 'block', fontSize: FONT.size.xs, fontWeight: FONT.weight.medium, color: COLORS.textSecondary, marginBottom: SPACING[2] }}>Name</label>
-                    <input
-                      required
-                      style={inputStyle}
-                      placeholder="Your name"
-                      value={form.name}
-                      onChange={e => setForm({ ...form, name: e.target.value })}
-                    />
+                    <input required style={inputStyle} placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: FONT.size.xs, fontWeight: FONT.weight.medium, color: COLORS.textSecondary, marginBottom: SPACING[2] }}>Email</label>
-                    <input
-                      required
-                      type="email"
-                      style={inputStyle}
-                      placeholder="your@email.com"
-                      value={form.email}
-                      onChange={e => setForm({ ...form, email: e.target.value })}
-                    />
+                    <input required type="email" style={inputStyle} placeholder="your@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: FONT.size.xs, fontWeight: FONT.weight.medium, color: COLORS.textSecondary, marginBottom: SPACING[2] }}>Message</label>
-                    <textarea
-                      required
-                      rows={5}
-                      style={{ ...inputStyle, resize: 'vertical' }}
-                      placeholder="How can we help?"
-                      value={form.message}
-                      onChange={e => setForm({ ...form, message: e.target.value })}
-                    />
+                    <textarea required rows={5} style={{ ...inputStyle, resize: 'vertical' }} placeholder="How can we help?" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} />
                   </div>
-                  <button type="submit" style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: SPACING[2],
-                    padding: `${SPACING[3]} ${SPACING[6]}`, borderRadius: RADIUS.btn,
-                    background: COLORS.primary, color: COLORS.white,
-                    fontSize: FONT.size.sm, fontWeight: FONT.weight.semibold,
-                    border: 'none', cursor: 'pointer', boxShadow: SHADOWS.glowSm,
-                  }}>
+                  <button type="submit" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: SPACING[2], padding: `${SPACING[3]} ${SPACING[6]}`, borderRadius: RADIUS.btn, background: COLORS.primary, color: COLORS.white, fontSize: FONT.size.sm, fontWeight: FONT.weight.semibold, border: 'none', cursor: 'pointer', boxShadow: SHADOWS.glowSm }}>
                     Send Message <Send size={14} />
                   </button>
                 </form>
