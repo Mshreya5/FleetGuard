@@ -10,18 +10,6 @@ const contactInfo = [
   { icon: MapPin, label: 'Address', value: '123 Fleet Avenue, Austin, TX 78701' },
 ];
 
-const inputStyle = {
-  width: '100%',
-  padding: `${SPACING[3]} ${SPACING[4]}`,
-  background: 'rgba(5,8,16,0.6)',
-  border: `1px solid ${COLORS.border}`,
-  borderRadius: RADIUS.btn,
-  color: COLORS.textPrimary,
-  fontSize: FONT.size.sm,
-  outline: 'none',
-  boxSizing: 'border-box',
-};
-
 export default function Contact() {
   const inputStyle = {
     width: '100%',
