@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import {
   Truck, ClipboardList, Clock, AlertTriangle, Users,
   Search, RotateCcw, Filter, Download, FileText, Printer,
-  X, Eye, CheckCircle, XCircle, AlertCircle, Info,
-  Home, BarChart2, Wrench, Bell, Shield, LogOut,
+  X, Eye, XCircle, AlertCircle,
+  Home, BarChart2, Wrench, Bell, Shield,
   ChevronLeft, ChevronRight, Menu, UserCircle2,
   CheckCheck, Wrench as WrenchIcon, FileCheck,
 } from 'lucide-react';

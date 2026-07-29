@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Truck, Bell, Home, BarChart2, Wrench, FileText,
-  Users, Shield, LogOut, Menu, UserCircle2,
-  CheckCheck, Trash2, XCircle, BellOff, Zap,
+  Users, Shield, Menu, UserCircle2,
+  CheckCheck, XCircle, BellOff, Zap,
 } from 'lucide-react';
 import { useNotifications } from '../context/NotificationContext';
 import NotificationCard from '../components/notifications/NotificationCard';

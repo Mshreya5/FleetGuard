@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Truck, Monitor, Clock, Activity, Layers,
   Home, BarChart2, Wrench, FileText, Users,
@@ -49,8 +49,7 @@ export default function LogoutPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showModal,   setShowModal]   = useState(false);
   const [sessions,    setSessions]    = useState(INITIAL_SESSIONS);
-  const [hasSession,  setHasSession]  = useState(true);
-  const navigate = useNavigate();
+  const [hasSession]                  = useState(true);
 
   const activeSessions = sessions.filter(s => s.status === 'Active').length;
 
