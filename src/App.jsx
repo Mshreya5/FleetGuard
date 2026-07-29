@@ -16,7 +16,7 @@ export default function App() {
         <Route path="/features" element={<Features />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/Login" element={<Login />} />
         <Route 
  path="/admin/dashboard" 
 
