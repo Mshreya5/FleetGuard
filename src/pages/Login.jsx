@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { COLORS, RADIUS, FONT } from "../tokens";
+
 
 const roles = [
   "Fleet Manager",
@@ -42,37 +42,38 @@ export default function Login() {
   };
 
   const handleLogin = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!validate()) return;
+    if (!selectedRole) {
+      setErrors({ role: "Please select a role" });
+      return;
+    }
 
+    if (email.trim() || password) {
+      if (!validate()) return;
+    }
 
-  switch(selectedRole) {
+    switch (selectedRole) {
+      case "Fleet Manager":
+        navigate("/fleetmanager/dashboard");
+        break;
 
-    case "Fleet Manager":
-      navigate("/fleetmanager/dashboard");
-      break;
+      case "Driver":
+        navigate("/driver/dashboard");
+        break;
 
+      case "Service Center / Mechanic":
+        navigate("/servicecenter/dashboard");
+        break;
 
-    case "Driver":
-      navigate("/driver/dashboard");
-      break;
+      case "Admin":
+        navigate("/admin/dashboard");
+        break;
 
-
-    case "Service Center / Mechanic":
-      navigate("/servicecente/dashboard");
-      break;
-
-
-    case "Admin":
-      navigate("/admin/dashboard");
-      break;
-
-
-    default:
-      break;
-  }
-};
+      default:
+        break;
+    }
+  };
 
   return (
     <div

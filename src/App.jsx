@@ -16,26 +16,11 @@ export default function App() {
         <Route path="/features" element={<Features />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/Login" element={<Login />} />
-        <Route 
- path="/admin/dashboard" 
-
-/>
-
-<Route 
- path="/fleetmanager/dashboard" 
- 
-/>
-
-<Route 
- path="/driver/dashboard" 
-
-/>
-
-<Route 
- path="/servicecenter/dashboard" 
-
-/>
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin/dashboard" />
+        <Route path="/fleetmanager/dashboard" />
+        <Route path="/driver/dashboard" />
+        <Route path="/servicecenter/dashboard" />
       </Routes>
     </BrowserRouter>
   );
