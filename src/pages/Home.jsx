@@ -75,8 +75,14 @@ export default function Home() {
             </div>
           </div>
 
+<<<<<<< HEAD
           <div className="fg-fade-right" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <div className="fg-float" style={{ width: '100%', maxWidth: '420px', background: 'rgba(13,21,38,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: RADIUS.lg, overflow: 'hidden', boxShadow: '0 8px 40px rgba(37,99,235,0.3)' }}>
+=======
+          {/* Right: Fleet Overview */}
+          <div className="fg-fade-right" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div className="fg-float" style={{ width: '100%', maxWidth: '420px', background: 'rgba(13,21,38,0.82)', backdropFilter: 'blur(20px)', border: `1px solid rgba(37,99,235,0.3)`, borderRadius: RADIUS.lg, overflow: 'hidden', boxShadow: '0 8px 40px rgba(37,99,235,0.3)' }}>
+>>>>>>> 39b9ba5 (Complete merge and keep local changes)
               <div style={{ padding: `${SPACING[4]} ${SPACING[5]}`, borderBottom: `1px solid ${COLORS.border}`, background: 'rgba(30,58,95,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: SPACING[2] }}>
                   <div style={{ width: '28px', height: '28px', background: COLORS.primary, borderRadius: RADIUS.btn, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: SHADOWS.glowSm }}>
