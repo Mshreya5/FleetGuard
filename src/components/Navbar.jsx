@@ -6,26 +6,16 @@ import NotificationBell from './notifications/NotificationBell';
 import '../pages/Notifications.css';
 
 const navLinks = [
-<<<<<<< HEAD
   { label: 'Home', to: '/' },
   { label: 'About', to: '/about' },
   { label: 'Features', to: '/features' },
+  { label: 'Audit Logs', to: '/audit-logs' },
+  { label: 'Notifications', to: '/notifications' },
   { label: 'Contact', to: '/contact' },
 ];
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-=======
-  { label: 'Home',          to: '/' },
-  { label: 'About',         to: '/about' },
-  { label: 'Features',      to: '/features' },
-  { label: 'Audit Logs',    to: '/audit-logs' },
-  { label: 'Contact',       to: '/contact' },
-];
-
-export default function Navbar() {
-  const [open,     setOpen]     = useState(false);
->>>>>>> da9cfe25b6596b8c858205d4795f54a51cc308c1
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -34,19 +24,12 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-<<<<<<< HEAD
   const getLinkStyle = ({ isActive }) => ({
     fontSize: FONT.size.sm,
     fontWeight: FONT.weight.medium,
     color: isActive ? COLORS.primaryLight : COLORS.textSecondary,
-=======
-  const linkStyle = ({ isActive }) => ({
-    fontSize:       FONT.size.sm,
-    fontWeight:     FONT.weight.medium,
-    color:          isActive ? COLORS.primaryLight : COLORS.textSecondary,
->>>>>>> da9cfe25b6596b8c858205d4795f54a51cc308c1
     textDecoration: 'none',
-    transition:     'color 0.2s ease',
+    transition: 'color 0.2s ease',
   });
 
   const headerStyle = {
@@ -86,12 +69,7 @@ export default function Navbar() {
           </span>
         </NavLink>
 
-<<<<<<< HEAD
-        <nav className="fg-desktop-nav" style={{ alignItems: 'center', gap: SPACING[8] }}>
-=======
-        {/* Desktop nav links */}
         <nav className="fg-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: SPACING[8] }}>
->>>>>>> da9cfe25b6596b8c858205d4795f54a51cc308c1
           {navLinks.map(({ label, to }) => (
             <NavLink
               key={label}
@@ -107,13 +85,8 @@ export default function Navbar() {
           ))}
         </nav>
 
-<<<<<<< HEAD
-        <div className="fg-desktop-nav" style={{ alignItems: 'center', gap: SPACING[3] }}>
-=======
-        {/* Desktop right actions */}
         <div className="fg-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: SPACING[3] }}>
           <NotificationBell />
->>>>>>> da9cfe25b6596b8c858205d4795f54a51cc308c1
           <NavLink
             to="/profile"
             title="My Profile"
@@ -152,12 +125,7 @@ export default function Navbar() {
         </button>
       </div>
 
-<<<<<<< HEAD
       {menuOpen && (
-=======
-      {/* Mobile menu */}
-      {open && (
->>>>>>> da9cfe25b6596b8c858205d4795f54a51cc308c1
         <div className="fg-mobile-only-block" style={{ background: 'rgba(5,8,16,0.97)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${COLORS.border}`, padding: `${SPACING[4]} ${SPACING[6]}`, display: 'flex', flexDirection: 'column', gap: SPACING[1] }}>
           {navLinks.map(({ label, to }) => (
             <NavLink

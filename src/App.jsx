@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { NotificationProvider } from './context/NotificationContext';
+
 import Home from './pages/Home';
 import About from './pages/About';
 import Features from './pages/Features';
@@ -25,10 +26,10 @@ export default function App() {
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin/dashboard" />
-          <Route path="/fleetmanager/dashboard" />
-          <Route path="/driver/dashboard" />
-          <Route path="/servicecenter/dashboard" />
+          <Route path="/admin/dashboard" element={<Home />} />
+          <Route path="/fleetmanager/dashboard" element={<Home />} />
+          <Route path="/driver/dashboard" element={<Home />} />
+          <Route path="/servicecenter/dashboard" element={<Home />} />
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
