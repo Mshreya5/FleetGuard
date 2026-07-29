@@ -2,16 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Truck, Menu, X, UserCircle2 } from 'lucide-react';
 import { COLORS, SHADOWS, RADIUS, FONT, SPACING } from '../tokens';
+import NotificationBell from './notifications/NotificationBell';
+import '../pages/Notifications.css';
 
 const navLinks = [
-  { label: 'Home',     to: '/' },
-  { label: 'About',    to: '/about' },
-  { label: 'Features', to: '/features' },
-  { label: 'Contact',  to: '/contact' },
+  { label: 'Home',          to: '/' },
+  { label: 'About',         to: '/about' },
+  { label: 'Features',      to: '/features' },
+  { label: 'Audit Logs',    to: '/audit-logs' },
+  { label: 'Notifications', to: '/notifications' },
+  { label: 'Contact',       to: '/contact' },
 ];
 
 export default function Navbar() {
-  const [open, setOpen]         = useState(false);
+  const [open,     setOpen]     = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -21,11 +25,11 @@ export default function Navbar() {
   }, []);
 
   const linkStyle = ({ isActive }) => ({
-    fontSize: FONT.size.sm,
-    fontWeight: FONT.weight.medium,
-    color: isActive ? COLORS.primaryLight : COLORS.textSecondary,
+    fontSize:       FONT.size.sm,
+    fontWeight:     FONT.weight.medium,
+    color:          isActive ? COLORS.primaryLight : COLORS.textSecondary,
     textDecoration: 'none',
-    transition: 'color 0.2s ease',
+    transition:     'color 0.2s ease',
   });
 
   return (
@@ -39,6 +43,7 @@ export default function Navbar() {
     }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: `0 ${SPACING[6]}`, height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
+        {/* Logo */}
         <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: SPACING[2], textDecoration: 'none' }} className="fg-logo">
           <div className="fg-logo-icon" style={{ width: '36px', height: '36px', background: COLORS.primary, borderRadius: RADIUS.card, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: SHADOWS.glowSm }}>
             <Truck size={17} color={COLORS.white} strokeWidth={2} />
@@ -48,6 +53,7 @@ export default function Navbar() {
           </span>
         </NavLink>
 
+        {/* Desktop nav links */}
         <nav className="fg-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: SPACING[8] }}>
           {navLinks.map(({ label, to }) => (
             <NavLink
@@ -64,7 +70,9 @@ export default function Navbar() {
           ))}
         </nav>
 
+        {/* Desktop right actions */}
         <div className="fg-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: SPACING[3] }}>
+          <NotificationBell />
           <NavLink
             to="/profile"
             title="My Profile"
@@ -78,7 +86,6 @@ export default function Navbar() {
           >
             <UserCircle2 size={20} color={COLORS.primaryLight} strokeWidth={1.8} />
           </NavLink>
-
           <a
             href="/login"
             className="fg-btn-primary fg-pulse-glow"
@@ -88,6 +95,7 @@ export default function Navbar() {
           </a>
         </div>
 
+        {/* Mobile hamburger */}
         <button
           onClick={() => setOpen(!open)}
           className="fg-mobile-only"
@@ -98,6 +106,7 @@ export default function Navbar() {
         </button>
       </div>
 
+      {/* Mobile menu */}
       {open && (
         <div className="fg-mobile-only-block" style={{ background: 'rgba(5,8,16,0.97)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${COLORS.border}`, padding: `${SPACING[4]} ${SPACING[6]}`, display: 'flex', flexDirection: 'column', gap: SPACING[1] }}>
           {navLinks.map(({ label, to }) => (

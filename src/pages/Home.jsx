@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Truck, FileText, Wrench, Users, BarChart2, Bell, ArrowRight } from 'lucide-react';
+import { Truck, FileText, Wrench, Users, BarChart2, Bell, ArrowRight, Shield } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { COLORS, SHADOWS, RADIUS, FONT, SPACING } from '../tokens';
@@ -35,6 +35,7 @@ export default function Home() {
 
         <div style={{ position: 'relative', zIndex: 10, maxWidth: '1280px', margin: '0 auto', padding: `96px ${SPACING[6]} ${SPACING[20]}`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: SPACING[16], alignItems: 'center', width: '100%' }}>
 
+          {/* Left: Hero text */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: SPACING[8] }}>
             <div className="fg-fade-up">
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: SPACING[2], fontSize: FONT.size.xs, fontWeight: FONT.weight.semibold, color: COLORS.primaryLight, background: 'rgba(74,144,226,0.12)', border: `1px solid rgba(74,144,226,0.3)`, padding: `${SPACING[1]} ${SPACING[3]}`, borderRadius: RADIUS.full, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -80,6 +81,7 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Right: Fleet Overview */}
           <div className="fg-fade-right" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <div className="fg-float" style={{ width: '100%', maxWidth: '420px', background: 'rgba(13,21,38,0.82)', backdropFilter: 'blur(20px)', border: `1px solid rgba(37,99,235,0.3)`, borderRadius: RADIUS.lg, overflow: 'hidden', boxShadow: '0 8px 40px rgba(37,99,235,0.3)' }}>
               <div style={{ padding: `${SPACING[4]} ${SPACING[5]}`, borderBottom: `1px solid ${COLORS.border}`, background: 'rgba(30,58,95,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -108,10 +110,16 @@ export default function Home() {
               </div>
               <div style={{ padding: `${SPACING[3]} ${SPACING[5]}`, borderTop: `1px solid ${COLORS.border}`, background: 'rgba(30,58,95,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: FONT.size.xs, color: COLORS.textSecondary }}>Last synced: just now</span>
-                <Link to="/features" style={{ fontSize: FONT.size.xs, fontWeight: FONT.weight.semibold, color: COLORS.primaryLight, textDecoration: 'none' }}>View All →</Link>
+                <div style={{ display: 'flex', gap: SPACING[4] }}>
+                  <Link to="/audit-logs" style={{ fontSize: FONT.size.xs, fontWeight: FONT.weight.semibold, color: COLORS.warning, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Shield size={11} /> Audit Logs
+                  </Link>
+                  <Link to="/features" style={{ fontSize: FONT.size.xs, fontWeight: FONT.weight.semibold, color: COLORS.primaryLight, textDecoration: 'none' }}>View All →</Link>
+                </div>
               </div>
             </div>
           </div>
+
         </div>
 
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '100px', background: 'linear-gradient(to top, #050810, transparent)', pointerEvents: 'none' }} />
