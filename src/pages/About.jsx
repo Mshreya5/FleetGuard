@@ -25,14 +25,9 @@ export default function About() {
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,8,16,0.6)' }} />
         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '500px', height: '400px', borderRadius: '50%', background: 'rgba(29,78,216,0.13)', filter: 'blur(120px)', pointerEvents: 'none' }} />
 
-        <div style={{
-          position: 'relative', zIndex: 10,
-          maxWidth: '1280px', margin: '0 auto', padding: `0 ${SPACING[6]}`,
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: SPACING[16], alignItems: 'start',
-        }}>
+        <div style={{ position: 'relative', zIndex: 10, maxWidth: '1280px', margin: '0 auto', padding: `0 ${SPACING[6]}`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: SPACING[16], alignItems: 'start' }}>
 
-          <div className="fg-fade-left" style={{ display: 'flex', flexDirection: 'column', gap: SPACING[6] }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: SPACING[6] }}>
             <div>
               <p style={{ fontSize: FONT.size.xs, fontWeight: FONT.weight.semibold, color: COLORS.primaryLight, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: SPACING[3] }}>About FleetGuard</p>
               <h1 style={{ fontSize: FONT.size['3xl'], fontWeight: FONT.weight.bold, color: COLORS.textPrimary, lineHeight: 1.25 }}>
@@ -54,23 +49,12 @@ export default function About() {
               need reliable, real-time visibility across their entire vehicle ecosystem.
             </p>
 
-            <Link to="/features" className="fg-btn-primary" style={{
-              display: 'inline-flex', alignItems: 'center', gap: SPACING[2],
-              width: 'fit-content', padding: `${SPACING[3]} ${SPACING[6]}`,
-              borderRadius: RADIUS.btn, background: COLORS.primary,
-              color: COLORS.white, fontSize: FONT.size.sm,
-              fontWeight: FONT.weight.semibold, textDecoration: 'none',
-              boxShadow: SHADOWS.glowSm,
-            }}>
+            <Link to="/features" className="fg-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: SPACING[2], width: 'fit-content', padding: `${SPACING[3]} ${SPACING[6]}`, borderRadius: RADIUS.btn, background: COLORS.primary, color: COLORS.white, fontSize: FONT.size.sm, fontWeight: FONT.weight.semibold, textDecoration: 'none', boxShadow: SHADOWS.glowSm }}>
               Explore Features <ArrowRight size={15} />
             </Link>
           </div>
 
-          <div className="fg-fade-right" style={{
-            background: 'rgba(13,21,38,0.75)', backdropFilter: 'blur(20px)',
-            border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.lg,
-            padding: SPACING[8], boxShadow: '0 8px 40px rgba(37,99,235,0.15)',
-          }}>
+          <div style={{ background: 'rgba(13,21,38,0.75)', backdropFilter: 'blur(20px)', border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.lg, padding: SPACING[8], boxShadow: '0 8px 40px rgba(37,99,235,0.15)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: SPACING[3], marginBottom: SPACING[6] }}>
               <div style={{ width: '4px', height: '24px', borderRadius: '2px', background: COLORS.primary }} />
               <p style={{ fontSize: FONT.size.xs, fontWeight: FONT.weight.semibold, color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Key Benefits</p>
@@ -78,7 +62,7 @@ export default function About() {
 
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '4px', listStyle: 'none', padding: 0, margin: 0 }}>
               {points.map((point) => (
-                <li key={point} className="fg-benefit-row" style={{ display: 'flex', alignItems: 'center', gap: SPACING[3], padding: `${SPACING[3]} ${SPACING[3]}`, borderRadius: '0 8px 8px 0', cursor: 'default' }}>
+                <li key={point} style={{ display: 'flex', alignItems: 'center', gap: SPACING[3], padding: `${SPACING[3]} ${SPACING[3]}`, borderRadius: '0 8px 8px 0', cursor: 'default' }}>
                   <CheckCircle2 size={16} color={COLORS.primary} strokeWidth={2} style={{ flexShrink: 0 }} />
                   <span style={{ fontSize: FONT.size.sm, color: COLORS.textSecondary, lineHeight: 1.6 }}>{point}</span>
                 </li>
