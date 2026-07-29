@@ -5,13 +5,13 @@ import { COLORS, RADIUS, FONT, SPACING } from '../tokens';
 
 const quickLinks = [
   { label: 'Features', to: '/features' },
-  { label: 'About',    to: '/about' },
-  { label: 'Contact',  to: '/contact' },
+  { label: 'About', to: '/about' },
+  { label: 'Contact', to: '/contact' },
 ];
 
 const contactInfo = [
-  { icon: Mail,   label: 'Email',   value: 'support@fleetguard.io' },
-  { icon: Phone,  label: 'Phone',   value: '+1 (800) 555-0199' },
+  { icon: Mail, label: 'Email', value: 'support@fleetguard.io' },
+  { icon: Phone, label: 'Phone', value: '+1 (800) 555-0199' },
   { icon: MapPin, label: 'Address', value: '123 Fleet Avenue, Austin, TX 78701' },
 ];
 
@@ -20,13 +20,7 @@ export default function Footer() {
     <footer style={{ position: 'relative', background: COLORS.bgAlt, borderTop: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
       <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '600px', height: '200px', background: 'rgba(74,144,226,0.07)', filter: 'blur(80px)', pointerEvents: 'none' }} />
 
-      <div style={{
-        position: 'relative', zIndex: 10,
-        maxWidth: '1280px', margin: '0 auto',
-        padding: `${SPACING[16]} ${SPACING[6]} ${SPACING[12]}`,
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: SPACING[10],
-      }}>
+      <div style={{ position: 'relative', zIndex: 10, maxWidth: '1280px', margin: '0 auto', padding: `${SPACING[16]} ${SPACING[6]} ${SPACING[12]}`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: SPACING[10] }}>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: SPACING[5], gridColumn: 'span 2' }}>
           <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: SPACING[2], textDecoration: 'none' }}>
