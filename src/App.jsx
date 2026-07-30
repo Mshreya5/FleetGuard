@@ -1,10 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { NotificationProvider } from './context/NotificationContext';
-<<<<<<< HEAD
-
-=======
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
 import Home from './pages/Home';
 import About from './pages/About';
 import Features from './pages/Features';
@@ -12,11 +8,9 @@ import Contact from './pages/Contact';
 import Profile from './pages/Profile';
 import AuditLog from './pages/AuditLog';
 import NotificationCenter from './pages/NotificationCenter';
-import LogoutPage from './pages/LogoutPage';
-<<<<<<< HEAD
 import Login from './pages/Login';
-=======
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
 
 export default function App() {
   return (
@@ -30,21 +24,14 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/audit-logs" element={<AuditLog />} />
           <Route path="/notifications" element={<NotificationCenter />} />
-          <Route path="/logout" element={<LogoutPage />} />
-<<<<<<< HEAD
           <Route path="/login" element={<Login />} />
-          <Route path="/admin/dashboard" element={<Home />} />
-          <Route path="/fleetmanager/dashboard" element={<Home />} />
-          <Route path="/driver/dashboard" element={<Home />} />
-          <Route path="/servicecenter/dashboard" element={<Home />} />
+         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
-=======
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
 
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
   );
 }
