@@ -1,4 +1,4 @@
-const NotificationPanel = ({ notifications }) => {
+const NotificationPanel = ({ notifications, loading = false, error = '' }) => {
   return (
     <section className="card-section notifications-panel">
       <div className="section-heading compact">
@@ -9,9 +9,15 @@ const NotificationPanel = ({ notifications }) => {
       </div>
 
       <ul className="notification-list">
-        {notifications.map((notification) => (
-          <li key={notification}>{notification}</li>
-        ))}
+        {loading ? (
+          <li>Loading notifications from the backend...</li>
+        ) : error ? (
+          <li>{error}</li>
+        ) : (
+          notifications.map((notification) => (
+            <li key={notification}>{notification}</li>
+          ))
+        )}
       </ul>
     </section>
   );

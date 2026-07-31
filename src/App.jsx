@@ -11,7 +11,7 @@ import AuditLog from './pages/AuditLog';
 import NotificationCenter from './pages/NotificationCenter';
 import LogoutPage from './pages/LogoutPage';
 import Login from './pages/Login';
-import AdminDashboard from './modules/Admin/AdminDashboard';
+import AdminDashboard from './modules/Admin';
 import ServiceCenterModule from './modules/ServiceCenter/ServiceCenterModule';
 
 export default function App() {
@@ -28,6 +28,7 @@ export default function App() {
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/fleetmanager/dashboard" element={<Home />} />
           <Route path="/driver/dashboard" element={<Home />} />

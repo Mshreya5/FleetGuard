@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import './Login.css';
 
 
 const roles = [
@@ -117,14 +118,7 @@ export default function Login() {
           Select your role to continue
         </p>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "15px",
-            marginBottom: "30px",
-          }}
-        >
+        <div className="login-role-grid">
           {roles.map((role) => (
             <div
               key={role}

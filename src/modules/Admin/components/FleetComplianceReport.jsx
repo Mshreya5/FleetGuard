@@ -6,7 +6,7 @@ const statusClass = (status) => {
   return 'badge danger';
 };
 
-const FleetComplianceReport = ({ vehicles, searchTerm }) => {
+const FleetComplianceReport = ({ vehicles, searchTerm, loading = false, error = '' }) => {
   const compliantCount = vehicles.filter((vehicle) => vehicle.overall === 'Compliant').length;
   const expiredInsurance = vehicles.filter((vehicle) => vehicle.insurance === 'Expired').length;
   const expiredPollution = vehicles.filter((vehicle) => vehicle.pollution === 'Expired').length;
@@ -51,30 +51,62 @@ const FleetComplianceReport = ({ vehicles, searchTerm }) => {
           <span>Showing {vehicles.length} records</span>
           <span>Search: {searchTerm || 'All vehicles'}</span>
         </div>
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Vehicle Registration Number</th>
-                <th>Insurance Status</th>
-                <th>Pollution Certificate Status</th>
-                <th>Fitness Certificate Status</th>
-                <th>Overall Compliance Status</th>
-              </tr>
-            </thead>
-            <tbody>
+        {loading ? (
+          <p className="muted">Loading compliance data from the backend...</p>
+        ) : error ? (
+          <p className="muted">{error}</p>
+        ) : (
+          <>
+            <div className="table-wrapper compliance-table-view">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Vehicle Registration Number</th>
+                    <th>Insurance Status</th>
+                    <th>Pollution Certificate Status</th>
+                    <th>Fitness Certificate Status</th>
+                    <th>Overall Compliance Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vehicles.map((vehicle) => (
+                    <tr key={vehicle.registrationNumber}>
+                      <td>{vehicle.registrationNumber}</td>
+                      <td><span className={statusClass(vehicle.insurance)}>{vehicle.insurance}</span></td>
+                      <td><span className={statusClass(vehicle.pollution)}>{vehicle.pollution}</span></td>
+                      <td><span className={statusClass(vehicle.fitness)}>{vehicle.fitness}</span></td>
+                      <td><span className={statusClass(vehicle.overall)}>{vehicle.overall}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="compliance-card-list">
               {vehicles.map((vehicle) => (
-                <tr key={vehicle.registrationNumber}>
-                  <td>{vehicle.registrationNumber}</td>
-                  <td><span className={statusClass(vehicle.insurance)}>{vehicle.insurance}</span></td>
-                  <td><span className={statusClass(vehicle.pollution)}>{vehicle.pollution}</span></td>
-                  <td><span className={statusClass(vehicle.fitness)}>{vehicle.fitness}</span></td>
-                  <td><span className={statusClass(vehicle.overall)}>{vehicle.overall}</span></td>
-                </tr>
+                <div key={vehicle.registrationNumber} className="compliance-vehicle-card">
+                  <div className="vehicle-reg">{vehicle.registrationNumber}</div>
+                  <div className="compliance-row">
+                    <span>Insurance</span>
+                    <span className={statusClass(vehicle.insurance)}>{vehicle.insurance}</span>
+                  </div>
+                  <div className="compliance-row">
+                    <span>Pollution Certificate</span>
+                    <span className={statusClass(vehicle.pollution)}>{vehicle.pollution}</span>
+                  </div>
+                  <div className="compliance-row">
+                    <span>Fitness Certificate</span>
+                    <span className={statusClass(vehicle.fitness)}>{vehicle.fitness}</span>
+                  </div>
+                  <div className="compliance-row">
+                    <span>Overall</span>
+                    <span className={statusClass(vehicle.overall)}>{vehicle.overall}</span>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

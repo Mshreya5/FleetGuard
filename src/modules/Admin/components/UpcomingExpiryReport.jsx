@@ -4,7 +4,7 @@ const expiryStatusClass = (daysRemaining) => {
   return 'badge success';
 };
 
-const UpcomingExpiryReport = ({ expiries, searchTerm, selectedFilter, onFilterChange }) => {
+const UpcomingExpiryReport = ({ expiries, searchTerm, selectedFilter, onFilterChange, loading = false, error = '' }) => {
   return (
     <section className="card-section">
       <div className="section-heading compact">
@@ -29,30 +29,36 @@ const UpcomingExpiryReport = ({ expiries, searchTerm, selectedFilter, onFilterCh
       </div>
 
       <div className="table-shell">
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Vehicle Registration Number</th>
-                <th>Document Type</th>
-                <th>Expiry Date</th>
-                <th>Days Remaining</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {expiries.map((item) => (
-                <tr key={`${item.registrationNumber}-${item.documentType}`}>
-                  <td>{item.registrationNumber}</td>
-                  <td>{item.documentType}</td>
-                  <td>{item.expiryDate}</td>
-                  <td>{item.daysRemaining} Days</td>
-                  <td><span className={expiryStatusClass(item.daysRemaining)}>{item.status}</span></td>
+        {loading ? (
+          <p className="muted">Loading expiry data from the backend...</p>
+        ) : error ? (
+          <p className="muted">{error}</p>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Vehicle Registration Number</th>
+                  <th>Document Type</th>
+                  <th>Expiry Date</th>
+                  <th>Days Remaining</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {expiries.map((item) => (
+                  <tr key={`${item.registrationNumber}-${item.documentType}`}>
+                    <td>{item.registrationNumber}</td>
+                    <td>{item.documentType}</td>
+                    <td>{item.expiryDate}</td>
+                    <td>{item.daysRemaining} Days</td>
+                    <td><span className={expiryStatusClass(item.daysRemaining)}>{item.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </section>
   );
