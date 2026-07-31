@@ -12,7 +12,7 @@ import NotificationCenter from './pages/NotificationCenter';
 import LogoutPage from './pages/LogoutPage';
 import Login from './pages/Login';
 import AdminDashboard from './modules/Admin/AdminDashboard';
-import FleetManagerDashboard from './modules/FleetManager/FleetManagerDashboard';
+import FleetManagerApp from './modules/FleetManager/front_end/src/App';
 
 export default function App() {
   return (
@@ -29,8 +29,8 @@ export default function App() {
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/fleet-manager/*" element={<FleetManagerDashboard />} />
-          <Route path="/fleet-manager" element={<FleetManagerDashboard />} />
+          <Route path="/fleetmanager/*" element={<FleetManagerApp />} />
+          <Route path="/FleetManager/front_end/DashboardPage" element={<FleetManagerApp />} />
           <Route path="/driver/dashboard" element={<Home />} />
           <Route path="/servicecenter/dashboard" element={<Home />} />
         </Routes>

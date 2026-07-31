@@ -54,7 +54,11 @@ const VehicleTable = ({
                                 </tr>
                             ) : (
                                 vehicles.map(v => (
-                                    <tr key={v._id}>
+                                    <tr
+                                        key={v._id}
+                                        onClick={() => onViewDetails(v._id)}
+                                        style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
+                                    >
                                         <td style={{ ...COMMON_STYLES.tableCell, fontWeight: '700', color: COLORS.primary }}>
                                             {v.registrationNumber}
                                         </td>
@@ -77,7 +81,7 @@ const VehicleTable = ({
                                             <StatusBadge status={v.complianceSummary?.overallStatus || 'Expired'} />
                                         </td>
                                         <td style={{ ...COMMON_STYLES.tableCell, textAlign: 'right' }}>
-                                            <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                            <div style={{ display: 'inline-flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
                                                 <button
                                                     onClick={() => onViewDetails(v._id)}
                                                     title="View Vehicle Details"

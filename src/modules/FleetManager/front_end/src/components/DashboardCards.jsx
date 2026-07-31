@@ -69,7 +69,7 @@ const DashboardCards = ({ summaryData, onNavigate, onSelectVehicle }) => {
             </div>
 
             {/* Compliance Summary & Quick Actions Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="fm-responsive-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 {/* Compliance Summary */}
                 <div style={COMMON_STYLES.card}>
                     <h3 style={COMMON_STYLES.heading}>Compliance Summary</h3>

@@ -6,6 +6,7 @@ const {
     getAssignments
 } = require("../controllers/assignmentController");
 
+router.post("/", assignVehicle);
 router.post("/assign", assignVehicle);
 router.post("/unassign", unassignVehicle);
 router.get("/", getAssignments);

@@ -10,5 +10,6 @@ const {
 router.post("/upload", upload.single("document"), uploadDocument);
 router.get("/status", getComplianceStatus);
 router.get("/upcoming-expiry", getUpcomingExpiries);
+router.get("/expiries", getUpcomingExpiries);
 
 module.exports = router;
