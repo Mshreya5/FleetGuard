@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const VehicleMileage = require('../models/VehicleMileage');
 const ServiceCost = require('../models/ServiceCost');
 const ServiceSchedule = require('../models/ServiceSchedule');
@@ -271,14 +272,47 @@ async function completeService(req, res) {
       return res.status(400).json({ message: 'Total cost is required.' });
     }
 
+    const regUpper = vehicle.trim().toUpperCase();
+
     const record = await ServiceHistory.create({
-      vehicle,
-      mechanic,
+      vehicle: regUpper,
+      vehicleId: regUpper,
+      driverId: 'driver-001',
+      mechanic: mechanic.trim(),
       cost: Number(totalCost),
+      serviceType: 'Routine Maintenance',
+      performedDate: new Date(),
+      date: new Date(),
       status: 'Completed',
-      description: nextServiceDue ? `Next service due: ${nextServiceDue}` : '',
+      description: nextServiceDue ? `Next service due: ${nextServiceDue}` : 'Completed service',
+      notes: nextServiceDue ? `Next service due: ${nextServiceDue}` : 'Completed service',
     });
-    return res.status(201).json({ message: 'Service marked completed.', record });
+
+    // Sync matching vehicle maintenance status & queue item
+    try {
+      const Vehicle = require('../../../Admin/backend/src/models/Vehicle');
+      const targetVehicle = await Vehicle.findOne({
+        $or: [{ registrationNumber: regUpper }, { _id: mongoose.Types.ObjectId.isValid(vehicle) ? vehicle : null }]
+      }).catch(() => null);
+
+      if (targetVehicle) {
+        targetVehicle.maintenanceStatus = 'Operational';
+        if (targetVehicle.status === 'Under Service' || targetVehicle.status === 'Maintenance') {
+          targetVehicle.status = (targetVehicle.assignedDriver && targetVehicle.assignedDriver !== 'Unassigned') ? 'Assigned' : 'Available';
+        }
+        await targetVehicle.save().catch(() => {});
+      }
+
+      const ServiceQueue = require('../models/ServiceQueue');
+      await ServiceQueue.updateMany(
+        { vehicleNumber: regUpper },
+        { status: 'Completed' }
+      ).catch(() => {});
+    } catch (syncErr) {
+      console.warn('Sync completed service with Vehicle/Queue warning:', syncErr.message);
+    }
+
+    return res.status(201).json({ message: 'Service marked completed successfully.', record });
   } catch (error) {
     return res.status(500).json({ message: 'Unable to complete service.', error: error.message });
   }

@@ -19,29 +19,39 @@ const assignVehicle = async (req, res) => {
             return res.status(400).json({ message: `Vehicle ${vehicle.registrationNumber} is already assigned to ${vehicle.assignedDriver}` });
         }
 
+        const regNum = vehicle.registrationNumber || "UNKNOWN";
+        const vehName = `${vehicle.brand || ""} ${vehicle.model || ""}`.trim() || regNum;
+
         const assignment = new Assignment({
             vehicleId: vehicle._id,
-            registrationNumber: vehicle.registrationNumber,
-            driverId: driverId || null,
+            registrationNumber: regNum,
+            vehicleNumber: regNum,
+            vehicleName: vehName,
+            driverId: driverId || 'driver-001',
             driverName: driverName.trim(),
             assignedDate: assignedDate ? new Date(assignedDate) : new Date(),
             status: "Active",
-            notes: notes || ""
+            notes: notes || "",
+            complianceStatus: "Valid",
+            insuranceExpiry: vehicle.insurance?.expiryDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            serviceDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         });
 
         await assignment.save();
 
         vehicle.status = "Assigned";
         vehicle.assignedDriver = driverName.trim();
-        vehicle.assignedDriverId = null;
+        vehicle.driverAssigned = driverName.trim();
+        vehicle.assignedDriverId = driverId || null;
         await vehicle.save();
 
         res.status(200).json({
-            message: `Vehicle ${vehicle.registrationNumber} assigned to ${driverName} successfully`,
+            message: `Vehicle ${regNum} assigned to ${driverName} successfully`,
             assignment
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("assignVehicle error:", error);
+        res.status(500).json({ message: error.message || "Failed to assign vehicle" });
     }
 };
 
@@ -62,6 +72,7 @@ const unassignVehicle = async (req, res) => {
 
         vehicle.status = "Available";
         vehicle.assignedDriver = "Unassigned";
+        vehicle.driverAssigned = "Unassigned";
         vehicle.assignedDriverId = null;
         await vehicle.save().catch(() => {});
 
@@ -78,8 +89,8 @@ const getAssignments = async (req, res) => {
         }
 
         const assignments = await Assignment.find()
-            .populate("vehicleId", "registrationNumber model brand")
             .sort({ createdAt: -1 })
+            .lean()
             .catch(() => []);
 
         res.status(200).json(assignments || []);

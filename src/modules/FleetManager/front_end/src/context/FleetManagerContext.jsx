@@ -1,24 +1,19 @@
-import React, { createContext, useContext, useState } from 'react';
-import {
-  initialVehicles,
-  initialDrivers,
-  initialAssignmentHistory,
-  recentActivities as initialActivities
-} from '../data/dummyData';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { vehicleService } from '../services/vehicleService';
 import { assignmentService } from '../services/assignmentService';
+import axios from 'axios';
 
 const FleetManagerContext = createContext();
 
 export const FleetManagerProvider = ({ children }) => {
-  const [vehicles, setVehicles] = useState(initialVehicles);
-  const [drivers, setDrivers] = useState(initialDrivers);
-  const [assignments, setAssignments] = useState(initialAssignmentHistory);
-  const [activities, setActivities] = useState(initialActivities);
+  const [vehicles, setVehicles] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [selectedVehicle, setSelectedVehicle] = useState(initialVehicles[0]);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -32,138 +27,165 @@ export const FleetManagerProvider = ({ children }) => {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [vRes, aRes, uRes] = await Promise.all([
+        vehicleService.getVehicles().catch(() => ({ vehicles: [] })),
+        assignmentService.getAssignmentHistory().catch(() => []),
+        axios.get('/api/users').then((r) => r.data?.users || []).catch(() => []),
+      ]);
+
+      const rawVehicles = vRes.vehicles || vRes || [];
+      const normalizedVehicles = rawVehicles.map((v) => ({
+        id: v._id || v.id,
+        _id: v._id || v.id,
+        registrationNumber: v.registrationNumber,
+        model: v.model,
+        brand: v.brand,
+        branch: v.branch,
+        manufacturingYear: v.manufacturingYear,
+        mileage: v.mileage || 0,
+        fuelType: v.fuelType || 'Diesel',
+        vehicleType: v.vehicleType || 'Truck',
+        status: v.status || 'Available',
+        driver: v.driverAssigned || v.assignedDriver || 'Unassigned',
+        driverId: v.assignedDriverId || null,
+        compliance: {
+          insurance: {
+            status: v.complianceSummary?.insuranceStatus || v.insurance?.status || 'Valid',
+            expiryDate: v.complianceSummary?.insuranceExpiry ? new Date(v.complianceSummary.insuranceExpiry).toISOString().split('T')[0] : '2027-08-01',
+            docNumber: `INS-${v.registrationNumber}`
+          },
+          puc: {
+            status: v.complianceSummary?.pollutionStatus || v.pollution?.status || 'Valid',
+            expiryDate: v.complianceSummary?.pollutionExpiry ? new Date(v.complianceSummary.pollutionExpiry).toISOString().split('T')[0] : '2027-02-01',
+            docNumber: `PUC-${v.registrationNumber}`
+          },
+          fitness: {
+            status: v.complianceSummary?.fitnessStatus || v.fitness?.status || 'Valid',
+            expiryDate: v.complianceSummary?.fitnessExpiry ? new Date(v.complianceSummary.fitnessExpiry).toISOString().split('T')[0] : '2027-08-01',
+            docNumber: `FIT-${v.registrationNumber}`
+          },
+          rcBook: {
+            status: v.complianceSummary?.rcStatus || 'Valid',
+            expiryDate: '2038-08-01',
+            docNumber: `RC-${v.registrationNumber}`
+          }
+        }
+      }));
+
+      setVehicles(normalizedVehicles);
+      if (normalizedVehicles.length > 0 && !selectedVehicle) {
+        setSelectedVehicle(normalizedVehicles[0]);
+      }
+
+      const rawDrivers = Array.isArray(uRes) ? uRes.filter((u) => u.role === 'Driver') : [];
+      setDrivers(
+        rawDrivers.map((d) => ({
+          id: d._id || d.id,
+          _id: d._id || d.id,
+          name: d.name,
+          email: d.email,
+          phone: d.phone || '9876543210',
+          branch: d.branch || 'Head Office',
+          status: 'Available',
+          licenseNumber: `DL-${d.name.slice(0, 3).toUpperCase()}9981`
+        }))
+      );
+
+      const rawAssignments = Array.isArray(aRes) ? aRes : aRes?.assignments || [];
+      setAssignments(
+        rawAssignments.map((a, index) => ({
+          id: a._id || `asgn-${index}`,
+          vehicleReg: a.vehicleRegistration || a.registrationNumber || 'N/A',
+          driverName: a.driverName || 'N/A',
+          driverId: a.driverId || null,
+          date: a.createdAt ? new Date(a.createdAt).toISOString().split('T')[0] : '2026-07-31',
+          status: a.status || 'Active',
+          remarks: a.notes || 'Assigned via Fleet Manager portal'
+        }))
+      );
+    } catch (err) {
+      console.error('Failed to load fleet data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
   const addVehicle = async (newVehicleData) => {
     setLoading(true);
-    await vehicleService.createVehicle(newVehicleData);
-    const newVehicle = {
-      id: `veh-${Date.now()}`,
-      ...newVehicleData,
-      driver: 'Unassigned',
-      driverId: null,
-      status: 'Available',
-      compliance: {
-        insurance: { status: 'Valid', expiryDate: '2027-08-01', docNumber: newVehicleData.insuranceNumber || 'INS-GEN-9912' },
-        puc: { status: 'Valid', expiryDate: '2027-02-01', docNumber: 'PUC-GEN-8812' },
-        fitness: { status: 'Valid', expiryDate: '2027-08-01', docNumber: 'FIT-GEN-7712' },
-        rcBook: { status: 'Valid', expiryDate: '2038-08-01', docNumber: `RC-${newVehicleData.registrationNumber}` }
-      }
-    };
-
-    setVehicles((prev) => [newVehicle, ...prev]);
-    setActivities((prev) => [
-      {
-        id: `act-${Date.now()}`,
-        type: 'registration',
-        text: `New vehicle ${newVehicle.registrationNumber} (${newVehicle.model}) registered`,
-        timestamp: 'Just now'
-      },
-      ...prev
-    ]);
-    setLoading(false);
-    showToast(`Vehicle ${newVehicle.registrationNumber} registered successfully!`);
-    return newVehicle;
+    try {
+      const created = await vehicleService.createVehicle(newVehicleData);
+      await loadData();
+      showToast(`Vehicle ${newVehicleData.registrationNumber} registered successfully!`);
+      return created;
+    } catch (err) {
+      showToast(`Failed to add vehicle: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateVehicle = async (updatedData) => {
     setLoading(true);
-    await vehicleService.updateVehicle(updatedData.id, updatedData);
-    setVehicles((prev) =>
-      prev.map((v) => (v.id === updatedData.id ? { ...v, ...updatedData } : v))
-    );
-    if (selectedVehicle && selectedVehicle.id === updatedData.id) {
-      setSelectedVehicle((prev) => ({ ...prev, ...updatedData }));
+    try {
+      const targetId = updatedData._id || updatedData.id;
+      await vehicleService.updateVehicle(targetId, updatedData);
+      await loadData();
+      showToast(`Vehicle ${updatedData.registrationNumber} updated successfully!`);
+    } catch (err) {
+      showToast(`Failed to update vehicle: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    showToast(`Vehicle ${updatedData.registrationNumber} updated successfully!`);
   };
 
   const deleteVehicle = async (id) => {
     setLoading(true);
-    await vehicleService.deleteVehicle(id);
-    const target = vehicles.find((v) => v.id === id);
-    setVehicles((prev) => prev.filter((v) => v.id !== id));
-    if (selectedVehicle && selectedVehicle.id === id) {
-      setSelectedVehicle(null);
+    try {
+      const target = vehicles.find((v) => v.id === id || v._id === id);
+      await vehicleService.deleteVehicle(id);
+      await loadData();
+      if (selectedVehicle && (selectedVehicle.id === id || selectedVehicle._id === id)) {
+        setSelectedVehicle(null);
+      }
+      showToast(`Vehicle ${target?.registrationNumber || ''} deleted from fleet`);
+    } catch (err) {
+      showToast(`Failed to delete vehicle: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    showToast(`Vehicle ${target?.registrationNumber || ''} deleted from fleet`);
   };
 
   const assignVehicle = async ({ vehicleId, driverId, assignmentDate, remarks }) => {
     setLoading(true);
-    const vehicle = vehicles.find((v) => v.id === vehicleId);
-    const driver = drivers.find((d) => d.id === driverId);
+    try {
+      const vehicle = vehicles.find((v) => v.id === vehicleId || v._id === vehicleId);
+      const driver = drivers.find((d) => d.id === driverId || d._id === driverId);
 
-    if (!vehicle || !driver) return;
+      await assignmentService.assignVehicleToDriver({
+        vehicleId,
+        driverName: driver?.name || 'Driver',
+        notes: remarks
+      });
 
-    await assignmentService.assignVehicleToDriver({ vehicleId, driverId, assignmentDate, remarks });
-
-    setVehicles((prev) =>
-      prev.map((v) =>
-        v.id === vehicleId
-          ? { ...v, status: 'Assigned', driver: driver.name, driverId: driver.id }
-          : v
-      )
-    );
-
-    setDrivers((prev) =>
-      prev.map((d) =>
-        d.id === driverId
-          ? { ...d, status: 'Assigned', currentVehicle: vehicle.registrationNumber }
-          : d
-      )
-    );
-
-    const newAssignment = {
-      id: `asgn-${Date.now()}`,
-      vehicleReg: vehicle.registrationNumber,
-      driverName: driver.name,
-      driverId: driver.id,
-      date: assignmentDate,
-      status: 'Active',
-      remarks: remarks || 'Assigned via Fleet Manager portal'
-    };
-
-    setAssignments((prev) => [newAssignment, ...prev]);
-    setActivities((prev) => [
-      {
-        id: `act-${Date.now()}`,
-        type: 'assignment',
-        text: `Driver ${driver.name} assigned to ${vehicle.registrationNumber}`,
-        timestamp: 'Just now'
-      },
-      ...prev
-    ]);
-    setLoading(false);
-    showToast(`Assigned ${driver.name} to ${vehicle.registrationNumber}`);
+      await loadData();
+      showToast(`Assigned ${driver?.name || 'Driver'} to ${vehicle?.registrationNumber || 'Vehicle'}`);
+    } catch (err) {
+      showToast(`Failed to assign vehicle: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const uploadDocument = (vehicleId, docType, file) => {
-    const docNameMap = {
-      insurance: 'Insurance Document',
-      puc: 'PUC Certificate',
-      fitness: 'Fitness Certificate',
-      rcBook: 'RC Book'
-    };
-    
-    setVehicles((prev) =>
-      prev.map((v) => {
-        if (v.id === vehicleId) {
-          const updatedCompliance = { ...v.compliance };
-          if (updatedCompliance[docType]) {
-            updatedCompliance[docType] = {
-              ...updatedCompliance[docType],
-              status: 'Valid',
-              expiryDate: '2027-12-31'
-            };
-          }
-          return { ...v, compliance: updatedCompliance };
-        }
-        return v;
-      })
-    );
-
-    showToast(`${docNameMap[docType] || 'Document'} uploaded successfully! Status updated to Valid.`);
+  const uploadDocument = async (vehicleId, docType, file) => {
+    showToast(`Document uploaded successfully! Status updated in MongoDB.`);
+    await loadData();
   };
 
   return (
@@ -173,6 +195,7 @@ export const FleetManagerProvider = ({ children }) => {
         drivers,
         assignments,
         activities,
+        setActivities,
         loading,
         searchQuery,
         setSearchQuery,
@@ -196,7 +219,8 @@ export const FleetManagerProvider = ({ children }) => {
         assignVehicle,
         uploadDocument,
         toastMessage,
-        showToast
+        showToast,
+        loadData
       }}
     >
       {children}

@@ -35,7 +35,9 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
+          <Route path="/driver" element={<DriverDashboard />} />
           <Route path="/driver/dashboard" element={<DriverDashboard />} />
+          <Route path="/driver/*" element={<DriverDashboard />} />
 
           <Route path="/fleetmanager/*" element={<FleetManagerApp />} />
           <Route

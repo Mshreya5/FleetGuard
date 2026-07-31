@@ -36,7 +36,7 @@ const serviceCenterRoutes = require('../src/modules/ServiceCenter/server/routes/
 const serviceCenterExtensionRoutes = require('../src/modules/ServiceCenter/server/routes/serviceExtensionRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.SERVER_PORT || 5000;
 
 // Middleware
 app.use(cors());
