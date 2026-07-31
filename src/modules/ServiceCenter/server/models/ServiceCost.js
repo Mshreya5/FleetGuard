@@ -42,4 +42,4 @@ const serviceCostSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('ServiceCost', serviceCostSchema);
+module.exports = mongoose.models.ServiceCost || mongoose.model('ServiceCost', serviceCostSchema);
