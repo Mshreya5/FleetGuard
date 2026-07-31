@@ -18,15 +18,21 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           
-          <Route path="/about" element={<About />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/audit-logs" element={<AuditLog />} />
-          <Route path="/notifications" element={<NotificationCenter />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/driver/dashboard" element={<DriverDashboard />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/" element={<Home />} />
+
+<Route path="/about" element={<About />} />
+<Route path="/features" element={<Features />} />
+<Route path="/contact" element={<Contact />} />
+<Route path="/profile" element={<Profile />} />
+<Route path="/audit-logs" element={<AuditLog />} />
+<Route path="/notifications" element={<NotificationCenter />} />
+
+<Route path="/login" element={<Login />} />
+
+<Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+<Route path="/driver/dashboard" element={<DriverDashboard />} />
+
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
