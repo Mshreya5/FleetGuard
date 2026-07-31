@@ -67,7 +67,6 @@ export default function QueueTable({ vehicles }) {
               <th>Issue</th>
               <th>Priority</th>
               <th>Status</th>
-              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -80,7 +79,6 @@ export default function QueueTable({ vehicles }) {
                 <td>{item.issue}</td>
                 <td><span className={`${styles.badge} ${priorityClass[item.priority]}`}>{item.priority}</span></td>
                 <td><span className={`${styles.badge} ${statusClass[item.status]}`}>{item.status}</span></td>
-                <td><button type="button" className={styles.viewButton}>View</button></td>
               </tr>
             ))}
           </tbody>

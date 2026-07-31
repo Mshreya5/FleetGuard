@@ -1,36 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import DashboardCards from './components/DashboardCards';
-import QuickActions from './components/QuickActions';
 import RecentActivity from './components/RecentActivity';
 import UpcomingServicesTable from './components/UpcomingServicesTable';
 import styles from './ServiceCenterDashboard.module.css';
 
-const summaryCards = [
-  { title: 'Vehicles Waiting', value: '24', subtitle: 'Vehicles awaiting inspection', tone: 'primary' },
-  { title: 'Vehicles In Service', value: '11', subtitle: 'Repairs currently in progress', tone: 'accent' },
-  { title: 'Completed Today', value: '38', subtitle: 'Service orders finished today', tone: 'success' },
-  { title: 'Total Revenue', value: '$18,240', subtitle: 'Revenue from completed services', tone: 'primary' },
-  { title: 'Upcoming Services', value: '12', subtitle: 'Jobs scheduled for tomorrow', tone: 'accent' },
-];
-
-const upcomingServices = [
-  { vehicleNumber: 'KA 01 AB 2345', ownerName: 'Maya Chen', serviceType: 'Oil Change', scheduledDate: '2026-07-30', mechanic: 'Ravi Kumar', status: 'Scheduled' },
-  { vehicleNumber: 'KA 05 CD 1189', ownerName: 'Arjun Rao', serviceType: 'Brake Service', scheduledDate: '2026-07-30', mechanic: 'Suresh Nair', status: 'In Progress' },
-  { vehicleNumber: 'KA 12 EF 7742', ownerName: 'Neha Singh', serviceType: 'Battery Replacement', scheduledDate: '2026-07-31', mechanic: 'Kiran Das', status: 'Scheduled' },
-  { vehicleNumber: 'KA 22 GH 4410', ownerName: 'Sameer Khan', serviceType: 'Tyre Rotation', scheduledDate: '2026-07-31', mechanic: 'Jayanth Rao', status: 'Pending' },
-  { vehicleNumber: 'KA 34 IJ 6612', ownerName: 'Priya Desai', serviceType: 'Engine Diagnostics', scheduledDate: '2026-08-01', mechanic: 'Arun Bhat', status: 'Scheduled' },
-];
-
-const recentActivities = [
-  { id: 1, title: 'Brake inspection completed', detail: 'Vehicle KA 05 CD 1189 was cleared for dispatch.', time: '10 mins ago' },
-  { id: 2, title: 'Mechanic reassigned', detail: 'Ravi Kumar took over the oil change request.', time: '23 mins ago' },
-  { id: 3, title: 'Service request logged', detail: 'New tyre rotation job received for KA 22 GH 4410.', time: '38 mins ago' },
-  { id: 4, title: 'Mileage recorded', detail: 'Vehicle KA 01 AB 2345 reached 18,320 km.', time: '1 hr ago' },
-  { id: 5, title: 'Parts approved', detail: 'Battery parts were approved for next shift.', time: '2 hrs ago' },
-  { id: 6, title: 'Maintenance note added', detail: 'Engine diagnostics report uploaded successfully.', time: '3 hrs ago' },
-];
-
 export default function ServiceCenterDashboard() {
+  const [summaryCards, setSummaryCards] = useState([]);
+  const [upcomingServices, setUpcomingServices] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/service-center/dashboard');
+        const { stats, recentActivities, upcomingServices } = response.data;
+
+        setSummaryCards([
+          { title: 'Vehicles Waiting', value: stats.vehiclesWaiting, tone: 'primary' },
+          { title: 'In Service', value: stats.vehiclesInService, tone: 'accent' },
+          { title: 'Completed Today', value: stats.completedToday, tone: 'success' },
+          { title: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, tone: 'revenue' },
+        ]);
+
+        setUpcomingServices(upcomingServices || []);
+        setRecentActivities(recentActivities || []);
+      } catch (error) {
+        console.error('Unable to load dashboard data', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <>
       <header className={styles.pageHeader}>
@@ -39,17 +41,15 @@ export default function ServiceCenterDashboard() {
           <h1 className={styles.pageTitle}>Service Dashboard</h1>
           <p className={styles.pageSubtitle}>Track workshop performance, upcoming service jobs, and recent service activity from a single view.</p>
         </div>
-        <div className={styles.headerBadge}>Live operations overview</div>
+        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(59,130,246,0.16)', border: '1px solid rgba(59,130,246,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontWeight: 700, fontSize: '1.1rem', flexShrink: 0 }}>SC</div>
       </header>
 
       <DashboardCards metrics={summaryCards} />
 
       <div className={styles.contentGrid}>
         <div className={styles.mainPanel}>
-          <QuickActions />
           <UpcomingServicesTable services={upcomingServices} />
         </div>
-
         <div className={styles.sidePanel}>
           <RecentActivity activities={recentActivities} />
         </div>

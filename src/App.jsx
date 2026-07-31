@@ -11,6 +11,8 @@ import AuditLog from './pages/AuditLog';
 import NotificationCenter from './pages/NotificationCenter';
 import LogoutPage from './pages/LogoutPage';
 import Login from './pages/Login';
+import AdminDashboard from './modules/Admin/AdminDashboard';
+import ServiceCenterModule from './modules/ServiceCenter/ServiceCenterModule';
 
 export default function App() {
   return (
@@ -26,10 +28,10 @@ export default function App() {
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin/dashboard" element={<Home />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/fleetmanager/dashboard" element={<Home />} />
           <Route path="/driver/dashboard" element={<Home />} />
-          <Route path="/servicecenter/dashboard" element={<Home />} />
+          <Route path="/servicecenter/*" element={<ServiceCenterModule />} />
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
