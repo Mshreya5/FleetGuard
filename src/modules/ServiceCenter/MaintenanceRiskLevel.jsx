@@ -26,6 +26,7 @@ export default function MaintenanceRiskLevel() {
 
   useEffect(() => {
     fetchRisk();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mileage]);
 
   return (

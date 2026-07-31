@@ -21,6 +21,7 @@ const DashboardPage = ({ onNavigate, onSelectVehicle, showToast }) => {
 
     useEffect(() => {
         loadSummary();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (loading) return <Loader message="Loading fleet dashboard metrics..." />;

@@ -24,6 +24,7 @@ export default function ServiceHistoryPage() {
 
   useEffect(() => {
     fetchHistory(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredCount = useMemo(() => Math.ceil(total / limit), [total]);
@@ -38,6 +39,7 @@ export default function ServiceHistoryPage() {
 
   useEffect(() => {
     fetchHistory(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, status]);
 
   return (
