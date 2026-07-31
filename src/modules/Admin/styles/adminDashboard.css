@@ -213,7 +213,7 @@ select {
 
 .summary-card {
   background: #1e293b;
-  border: 1px solid #334155;
+  border: 1px solid #5587cd;
   border-radius: 18px;
   padding: 18px;
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.3);
@@ -221,7 +221,7 @@ select {
 }
 
 .summary-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(2px);
   border-color: #3b82f6;
 }
 
@@ -235,21 +235,29 @@ select {
   font-size: 1.7rem;
   margin: 8px 0;
 }
+.summary-card {
+  border: 1px solid #bbcbe4;
+  transition: border-color 0.3s ease;
+}
+
+.summary-card:hover {
+  border-color: #60a5fa; /* Light Blue */
+}
 
 .summary-card.primary {
-  border-color: #3b82f6;
+  border-color: #bbcbe4;
 }
 
 .summary-card.accent {
-  border-color: #f59e0b;
+  border-color: #bbcbe4;
 }
 
 .summary-card.success {
-  border-color: #22c55e;
+  border-color: #bbcbe4;
 }
 
 .summary-card.danger {
-  border-color: #ef4444;
+  border-color: #bbcbe4;
 }
 
 .card-section {
@@ -396,29 +404,86 @@ th {
   }
 }
 
+/* Mobile sidebar overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 40;
+}
+
+.sidebar-overlay.open {
+  display: block;
+}
+
+/* Hamburger toggle button */
+.sidebar-toggle {
+  display: none;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 @media (max-width: 760px) {
   .admin-dashboard {
     flex-direction: column;
   }
 
   .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #334155;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    width: 260px;
+    border-right: 1px solid #334155;
+    border-bottom: none;
+    overflow-y: auto;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
   }
 
   .top-navbar {
-    flex-direction: column;
-    align-items: stretch;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .navbar-brand-block h1 {
+    font-size: 1.1rem;
   }
 
   .search-bar {
     max-width: none;
+    width: 100%;
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .admin-content {
+    padding: 16px;
   }
 
   .summary-grid,
   .compliance-summary-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .section-heading,
@@ -427,4 +492,82 @@ th {
     flex-direction: column;
     align-items: flex-start;
   }
+
+  /* Forms with inline 2-col grid (ManageUsers, OverrideLogs) */
+  .card-section form[style*="grid-template-columns"] {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Notification row — wrap buttons below content */
+  .card-section > div > div[style*="justify-content: space-between"] {
+    flex-wrap: wrap;
+  }
+
+  /* Section heading action buttons wrap below title */
+  .section-heading.compact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-grid,
+  .compliance-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Ensure table min-width doesn't break layout — scroll handles it */
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .card-section {
+    padding: 14px;
+  }
+
+  .mini-stat {
+    padding: 10px 12px;
+  }
+
+  .compliance-table-view {
+    display: none;
+  }
+
+  .compliance-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
+}
+
+.compliance-card-list {
+  display: none;
+}
+
+.compliance-vehicle-card {
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compliance-vehicle-card .vehicle-reg {
+  font-weight: 700;
+  color: #f1f5f9;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.compliance-vehicle-card .compliance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  color: #94a3b8;
 }
