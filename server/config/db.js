@@ -18,8 +18,8 @@ const connectDB = async () => {
   try {
     const conn = await mongoose.connect(uri, {
       dbName: 'fleetguard',
-      serverSelectionTimeoutMS: 3000,
-      connectTimeoutMS: 3000
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000
     });
     console.log(`[FleetGuard Unified Backend] MongoDB Connected: ${conn.connection.host} / DB: ${conn.connection.name}`);
     return conn;
@@ -28,8 +28,8 @@ const connectDB = async () => {
     try {
       const fallbackConn = await mongoose.connect("mongodb://127.0.0.1:27017/fleetguard", {
         dbName: 'fleetguard',
-        serverSelectionTimeoutMS: 3000,
-        connectTimeoutMS: 3000
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000
       });
       console.log(`[FleetGuard Unified Backend] Connected to local MongoDB fallback: ${fallbackConn.connection.host}`);
       return fallbackConn;
@@ -40,4 +40,5 @@ const connectDB = async () => {
   }
 };
 
+connectDB.connectDB = connectDB;
 module.exports = connectDB;

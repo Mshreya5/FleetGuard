@@ -1,12 +1,26 @@
 const express = require('express');
 const cors = require('cors');
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
-require('dotenv').config({ path: path.join(__dirname, '../src/modules/FleetManager/backend/.env') });
 
 const connectDB = require('./config/db');
 
-// Import Stakeholder Routes
+// Environment variable setup
+dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, '../src/modules/FleetManager/backend/.env') });
+
+// Driver Module Routes & Models
+const driverRoutes = require('./routes/driverRoutes');
+const Assignment = require('./models/Assignment');
+const Checklist = require('./models/Checklist');
+const IssueReport = require('./models/IssueReport');
+const Notification = require('./models/Notification');
+const TripStatus = require('./models/TripStatus');
+const ServiceHistory = require('./models/ServiceHistory');
+
+// Stakeholder Routes
 // 1. Fleet Manager Routes
 const fmDashboardRoutes = require('../src/modules/FleetManager/backend/routes/dashboardRoutes');
 const fmVehicleRoutes = require('../src/modules/FleetManager/backend/routes/vehicleRoutes');
@@ -22,6 +36,7 @@ const serviceCenterRoutes = require('../src/modules/ServiceCenter/server/routes/
 const serviceCenterExtensionRoutes = require('../src/modules/ServiceCenter/server/routes/serviceExtensionRoutes');
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -32,9 +47,41 @@ app.use(express.urlencoded({ extended: true }));
 const uploadsPath = path.join(__dirname, '../src/modules/FleetManager/backend/uploads');
 app.use('/uploads', express.static(uploadsPath));
 
-// Stakeholder API Route Mounts
+// API Route Mounts
 
-// Fleet Manager APIs
+// 1. Driver Module Routes
+app.use('/api/driver', driverRoutes);
+
+// Driver Health & DB Status Check Endpoint
+app.get('/api/health/db', async (req, res) => {
+  const readyState = mongoose.connection.readyState;
+  const connectionStatus = readyState === 1 ? 'connected' : 'disconnected';
+
+  let counts = {};
+
+  if (readyState === 1) {
+    try {
+      counts = {
+        assignments: await Assignment.countDocuments(),
+        checklists: await Checklist.countDocuments(),
+        issues: await IssueReport.countDocuments(),
+        notifications: await Notification.countDocuments(),
+        trips: await TripStatus.countDocuments(),
+        services: await ServiceHistory.countDocuments(),
+      };
+    } catch (err) {
+      console.error('Error fetching collection counts:', err.message);
+    }
+  }
+
+  res.json({
+    connection: connectionStatus,
+    readyState,
+    counts,
+  });
+});
+
+// 2. Fleet Manager APIs
 app.use('/api/dashboard', fmDashboardRoutes);
 app.use('/api/vehicles', fmVehicleRoutes);
 app.use('/api/compliance', fmComplianceRoutes);
@@ -48,19 +95,14 @@ app.get('/api/v1/fleet-manager/drivers', (req, res) => {
   res.status(200).json({ success: true, drivers: [] });
 });
 
-// Admin & Authentication APIs
+// 3. Admin & Authentication APIs
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', adminUserRoutes);
 app.use('/api/auth', adminUserRoutes);
 
-// Service Center APIs
+// 4. Service Center APIs
 app.use('/api/service-center', serviceCenterRoutes);
 app.use('/api/service-center/extensions', serviceCenterExtensionRoutes);
-
-// Driver APIs (Unified Endpoint)
-app.get('/api/driver/dashboard', (req, res) => {
-  res.status(200).json({ status: 'ok', module: 'Driver', assignments: [], notifications: [] });
-});
 
 // Health check endpoints
 const healthCheck = (req, res) => {
@@ -84,13 +126,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-
 async function startServer() {
   await connectDB();
   app.listen(PORT, () => {
     console.log(`====================================================`);
     console.log(`[FleetGuard Unified Server] Running on http://localhost:${PORT}`);
+    console.log(`- Driver APIs:        /api/driver`);
     console.log(`- FleetManager APIs: /api/dashboard, /api/vehicles, /api/compliance, /api/assignments`);
     console.log(`- Admin APIs:        /api/admin, /api/users`);
     console.log(`- ServiceCenter APIs: /api/service-center, /api/service-center/extensions`);
