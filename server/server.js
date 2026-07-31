@@ -17,7 +17,7 @@ dotenv.config({
   path: path.join(__dirname, '../.env'),
 });
 
-console.log("MONGO_URI =", process.env.MONGO_URI);
+
 
 const app = express();
 const PORT = process.env.PORT || 5001;

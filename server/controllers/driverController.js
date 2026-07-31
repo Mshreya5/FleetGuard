@@ -93,8 +93,7 @@ exports.startTrip = async (req, res) => {
 };
 
 exports.createIssueReport = async (req, res) => {
-  console.log("===== ISSUE API HIT =====");
-console.log(req.body);
+  
   try {
     const { issueType, description, priority, date } = req.body;
 

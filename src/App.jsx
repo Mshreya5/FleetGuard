@@ -17,7 +17,7 @@ export default function App() {
     <NotificationProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
+          
           <Route path="/about" element={<About />} />
           <Route path="/features" element={<Features />} />
           <Route path="/contact" element={<Contact />} />
