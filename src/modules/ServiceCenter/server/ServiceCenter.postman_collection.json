@@ -1,0 +1,471 @@
+{
+  "info": {
+    "name": "FleetGuard - Service Center API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base", "value": "http://localhost:5000" },
+    { "key": "queueId", "value": "REPLACE_WITH_REAL_ID" },
+    { "key": "logId", "value": "REPLACE_WITH_REAL_ID" },
+    { "key": "costId", "value": "REPLACE_WITH_REAL_ID" },
+    { "key": "scheduleId", "value": "REPLACE_WITH_REAL_ID" },
+    { "key": "historicalId", "value": "REPLACE_WITH_REAL_ID" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/health",
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-01 Dashboard",
+      "item": [
+        {
+          "name": "GET Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/dashboard",
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-02 Service Queue",
+      "item": [
+        {
+          "name": "GET All Queue Items",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/queue",
+            "header": []
+          }
+        },
+        {
+          "name": "GET Queue - Search",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/queue?search=CAB",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","queue"],
+              "query": [{ "key": "search", "value": "CAB" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "GET Queue - Filter Priority",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/queue?priority=High",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","queue"],
+              "query": [{ "key": "priority", "value": "High" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "GET Queue - Filter Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/queue?status=Waiting",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","queue"],
+              "query": [{ "key": "status", "value": "Waiting" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "POST Create Queue Item",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/queue",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleNumber\": \"CAB-204\",\n  \"ownerBranch\": \"North Branch\",\n  \"vehicleModel\": \"Toyota Corolla\",\n  \"currentMileage\": 18500,\n  \"issue\": \"Oil change and tyre rotation\",\n  \"priority\": \"High\",\n  \"status\": \"Waiting\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT Update Queue Item",
+          "request": {
+            "method": "PUT",
+            "url": "{{base}}/api/service-center/queue/{{queueId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\",\n  \"priority\": \"Medium\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE Queue Item",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base}}/api/service-center/queue/{{queueId}}",
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-03 Service Log",
+      "item": [
+        {
+          "name": "GET All Service Logs",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/logs",
+            "header": []
+          }
+        },
+        {
+          "name": "GET Service Log By ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/logs/{{logId}}",
+            "header": []
+          }
+        },
+        {
+          "name": "POST Create Service Log",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/logs",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"CAB-204\",\n  \"serviceDate\": \"2025-07-30T00:00:00.000Z\",\n  \"mechanicName\": \"R. Silva\",\n  \"serviceType\": \"Full Service\",\n  \"partsReplaced\": \"Oil filter, Air filter\",\n  \"description\": \"Complete oil change and filter replacement\",\n  \"notes\": \"Next service in 5000 km\",\n  \"revenue\": 180\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT Update Service Log",
+          "request": {
+            "method": "PUT",
+            "url": "{{base}}/api/service-center/logs/{{logId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceType\": \"Brake Service\",\n  \"revenue\": 220\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE Service Log",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base}}/api/service-center/logs/{{logId}}",
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-04 Vehicle Mileage",
+      "item": [
+        {
+          "name": "POST Update Vehicle Mileage",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/extensions/mileage",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"CAB-204\",\n  \"currentMileage\": 18500,\n  \"updatedMileage\": 19200,\n  \"notes\": \"Post service mileage update\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST Mileage - Validation Error (updated <= current)",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/extensions/mileage",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"CAB-204\",\n  \"currentMileage\": 18500,\n  \"updatedMileage\": 18000\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-05 Service Cost",
+      "item": [
+        {
+          "name": "GET All Service Costs",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/extensions/costs",
+            "header": []
+          }
+        },
+        {
+          "name": "POST Save Service Cost",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/extensions/costs",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"CAB-204\",\n  \"labourCost\": 100,\n  \"sparePartsCost\": 60,\n  \"otherCharges\": 20,\n  \"description\": \"Full service with parts\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT Update Service Cost",
+          "request": {
+            "method": "PUT",
+            "url": "{{base}}/api/service-center/extensions/costs/{{costId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"CAB-204\",\n  \"labourCost\": 120,\n  \"sparePartsCost\": 80,\n  \"otherCharges\": 30,\n  \"description\": \"Updated service cost\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE Service Cost",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base}}/api/service-center/extensions/costs/{{costId}}",
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-06 Next Service Schedule",
+      "item": [
+        {
+          "name": "GET All Schedules",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/extensions/schedules",
+            "header": []
+          }
+        },
+        {
+          "name": "POST Save Schedule",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/extensions/schedules",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"CAB-204\",\n  \"currentMileage\": 18500,\n  \"serviceInterval\": 30,\n  \"currentServiceDate\": \"2025-07-30\",\n  \"notes\": \"Routine schedule\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT Update Schedule",
+          "request": {
+            "method": "PUT",
+            "url": "{{base}}/api/service-center/extensions/schedules/{{scheduleId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"CAB-204\",\n  \"currentMileage\": 19000,\n  \"serviceInterval\": 45,\n  \"currentServiceDate\": \"2025-07-30\",\n  \"notes\": \"Updated interval\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-07 Service History",
+      "item": [
+        {
+          "name": "GET Service History",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/extensions/history",
+            "header": []
+          }
+        },
+        {
+          "name": "GET History - Search",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/extensions/history?search=CAB",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","extensions","history"],
+              "query": [{ "key": "search", "value": "CAB" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "GET History - Filter Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/extensions/history?status=Completed",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","extensions","history"],
+              "query": [{ "key": "status", "value": "Completed" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "GET History - Pagination",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/extensions/history?page=1&limit=5",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","extensions","history"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            },
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-08 Historical Records",
+      "item": [
+        {
+          "name": "GET All Historical Records",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/extensions/historical",
+            "header": []
+          }
+        },
+        {
+          "name": "POST Add Historical Record",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/extensions/history",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"TRK-118\",\n  \"date\": \"2025-06-15T00:00:00.000Z\",\n  \"description\": \"Engine overhaul completed\",\n  \"cost\": 850\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT Update Historical Record",
+          "request": {
+            "method": "PUT",
+            "url": "{{base}}/api/service-center/extensions/historical/{{historicalId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"TRK-118\",\n  \"date\": \"2025-06-15T00:00:00.000Z\",\n  \"description\": \"Engine overhaul + gearbox check\",\n  \"cost\": 950\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE Historical Record",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base}}/api/service-center/extensions/historical/{{historicalId}}",
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-09 Complete Service",
+      "item": [
+        {
+          "name": "POST Mark Service Completed",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/extensions/complete",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"CAB-204\",\n  \"mechanic\": \"R. Silva\",\n  \"totalCost\": 350,\n  \"nextServiceDue\": \"5000 km\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST Complete Service - Validation Error",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/api/service-center/extensions/complete",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle\": \"\",\n  \"mechanic\": \"R. Silva\",\n  \"totalCost\": 350\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "SC-10 Maintenance Risk",
+      "item": [
+        {
+          "name": "GET Risk - Low (mileage < 50000)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/extensions/risk?mileage=20000",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","extensions","risk"],
+              "query": [{ "key": "mileage", "value": "20000" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "GET Risk - Medium (50000-79999)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/extensions/risk?mileage=60000",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","extensions","risk"],
+              "query": [{ "key": "mileage", "value": "60000" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "GET Risk - High (>= 80000)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/api/service-center/extensions/risk?mileage=90000",
+              "host": ["{{base}}"],
+              "path": ["api","service-center","extensions","risk"],
+              "query": [{ "key": "mileage", "value": "90000" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "GET Risk - Missing Mileage (400 error)",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/api/service-center/extensions/risk",
+            "header": []
+          }
+        }
+      ]
+    }
+  ]
+}
