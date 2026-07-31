@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import styles from './ServiceCenterDashboard.module.css';
 
 const initialForm = {
@@ -35,25 +36,39 @@ export default function ServiceLogForm() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/service-center/logs');
+        setSubmittedLogs(response.data);
+      } catch (error) {
+        console.error('Unable to fetch service logs', error);
+      }
+    };
+
+    fetchLogs();
+  }, []);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validate()) {
       return;
     }
 
-    setSubmittedLogs((prev) => [
-      {
-        id: Date.now(),
-        vehicle: formValues.vehicle,
-        serviceDate: formValues.serviceDate,
-        mechanicName: formValues.mechanicName,
-        serviceType: formValues.serviceType,
-      },
-      ...prev,
-    ].slice(0, 4));
+    try {
+      const payload = {
+        ...formValues,
+        serviceDate: new Date(formValues.serviceDate).toISOString(),
+      };
 
-    setFormValues(initialForm);
+      const response = await axios.post('http://localhost:5000/api/service-center/logs', payload);
+      setSubmittedLogs((prev) => [response.data, ...prev].slice(0, 4));
+      setFormValues(initialForm);
+      setErrors({});
+    } catch (error) {
+      console.error('Unable to save service log', error);
+    }
   };
 
   const handleCancel = () => {

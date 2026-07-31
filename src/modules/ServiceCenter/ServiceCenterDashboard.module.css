@@ -140,7 +140,7 @@ select {
 
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -318,6 +318,11 @@ select {
 }
 
 .priorityHigh {
+  background: rgba(239, 68, 68, 0.16);
+  color: var(--danger);
+}
+
+.danger {
   background: rgba(239, 68, 68, 0.16);
   color: var(--danger);
 }
@@ -507,18 +512,24 @@ select {
   color: var(--muted);
 }
 
+/* ── Tablet (≤1100px) ── */
 @media (max-width: 1100px) {
   .cardGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .contentGrid,
   .formLayout {
     grid-template-columns: 1fr;
   }
+
+  .sidebar {
+    width: 220px;
+  }
 }
 
-@media (max-width: 760px) {
+/* ── Mobile (≤768px) ── */
+@media (max-width: 768px) {
   .dashboardShell {
     flex-direction: column;
   }
@@ -527,19 +538,95 @@ select {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border);
+    padding: 16px 14px;
+    gap: 12px;
+  }
+
+  .navList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .navItem {
+    padding: 10px 10px;
+    font-size: 0.82rem;
+    gap: 6px;
   }
 
   .mainContent {
-    padding: 18px;
+    padding: 14px;
+    gap: 14px;
   }
 
   .pageHeader {
     flex-direction: column;
     align-items: flex-start;
+    padding: 16px;
   }
 
-  .cardGrid,
+  .pageTitle {
+    font-size: 1.25rem;
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
   .formGrid {
     grid-template-columns: 1fr;
+  }
+
+  .filterBar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filterInput,
+  .filterSelect {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 8px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .metricValue {
+    font-size: 1.3rem;
+  }
+
+  .panelCompact,
+  .tableCard,
+  .formCard {
+    padding: 14px;
+  }
+}
+
+/* ── Small Mobile (≤480px) ── */
+@media (max-width: 480px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .navList {
+    grid-template-columns: 1fr;
+  }
+
+  .pageTitle {
+    font-size: 1.1rem;
+  }
+
+  .formActions {
+    flex-direction: column;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
   }
 }
