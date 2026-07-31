@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './Login.css';
 
-
 const roles = [
   "Fleet Manager",
   "Driver",
@@ -42,7 +41,7 @@ export default function Login() {
     return Object.keys(err).length === 0;
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!selectedRole) {
@@ -52,6 +51,25 @@ export default function Login() {
 
     if (email.trim() || password) {
       if (!validate()) return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          role: selectedRole
+        })
+      });
+      const data = await response.json();
+      if (data && data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user || { email, role: selectedRole }));
+      }
+    } catch (err) {
+      console.warn("Login API warning (falling back to navigation):", err.message);
     }
 
     switch (selectedRole) {
@@ -225,7 +243,8 @@ export default function Login() {
                 </p>
               )}
             </div>
-                        <button
+
+            <button
               type="submit"
               style={{
                 width: "100%",

@@ -38,4 +38,4 @@ const serviceHistorySchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('ServiceHistory', serviceHistorySchema);
+module.exports = mongoose.models.ServiceHistory || mongoose.model('ServiceHistory', serviceHistorySchema);
