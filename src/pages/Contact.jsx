@@ -5,27 +5,9 @@ import Footer from '../components/Footer';
 import { COLORS, SHADOWS, RADIUS, FONT, SPACING } from '../tokens';
 
 const contactInfo = [
-<<<<<<< HEAD
   { icon: Mail, label: 'Email', value: 'support@fleetguard.io' },
   { icon: Phone, label: 'Phone', value: '+1 (800) 555-0199' },
   { icon: MapPin, label: 'Address', value: '123 Fleet Avenue, Austin, TX 78701' },
-=======
-  {
-    icon: Mail,
-    label: 'Support Email',
-    value: 'support@fleetguard.com',
-  },
-  {
-    icon: Phone,
-    label: 'Customer Support',
-    value: '+91 98765 43210',
-  },
-  {
-    icon: MapPin,
-    label: 'Head Office',
-    value: 'XYZ, Bengaluru, Karnataka',
-  },
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
 ];
 
 export default function Contact() {
@@ -166,7 +148,6 @@ export default function Contact() {
           >
             {/* Left Section */}
 
-<<<<<<< HEAD
             <div style={{ display: 'flex', flexDirection: 'column', gap: SPACING[6] }}>
               <p style={{ color: COLORS.textSecondary, fontSize: FONT.size.base, lineHeight: 1.75 }}>
                 Have questions about FleetGuard? Our team is ready to help you get started
@@ -182,34 +163,10 @@ export default function Contact() {
                       <p style={{ fontSize: FONT.size.xs, color: COLORS.textSecondary, margin: 0 }}>{label}</p>
                       <p style={{ fontSize: FONT.size.sm, color: COLORS.textPrimary, margin: `${SPACING[1]} 0 0`, fontWeight: FONT.weight.medium }}>{value}</p>
                     </div>
-=======
-            <div>
-              {contactInfo.map(({ icon: Icon, label, value }) => (
-                <div
-                  key={label}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: SPACING[4],
-                    marginBottom: SPACING[5],
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: RADIUS.btn,
-                      background: "rgba(59,130,246,0.1)",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Icon color={COLORS.primary} />
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
                   </div>
                 ))}
               </div>
+
 
               <div style={{ marginTop: SPACING[2], background: 'rgba(59,130,246,0.08)', padding: SPACING[6], borderRadius: RADIUS.lg, border: `1px solid ${COLORS.border}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: SPACING[3], marginBottom: SPACING[3] }}>
@@ -222,7 +179,6 @@ export default function Contact() {
               </div>
             </div>
 
-<<<<<<< HEAD
             <div style={{ background: 'rgba(13,21,38,0.8)', backdropFilter: 'blur(20px)', border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.lg, padding: SPACING[8], boxShadow: SHADOWS.card }}>
               {sent ? (
                 <div style={{ textAlign: 'center', padding: `${SPACING[8]} 0` }}>
@@ -231,40 +187,6 @@ export default function Contact() {
                   </div>
                   <h3 style={{ fontSize: FONT.size.lg, fontWeight: FONT.weight.semibold, color: COLORS.textPrimary, marginBottom: SPACING[2] }}>Message Sent!</h3>
                   <p style={{ fontSize: FONT.size.sm, color: COLORS.textSecondary }}>We'll get back to you within 24 hours.</p>
-=======
-            {/* Contact Form */}
-
-            <div
-              style={{
-                background: "rgba(13,21,38,0.85)",
-                padding: SPACING[8],
-                borderRadius: RADIUS.lg,
-                border: `1px solid ${COLORS.border}`,
-                boxShadow: SHADOWS.card,
-              }}
-            >
-              {sent ? (
-                <div style={{ textAlign: "center", padding: "50px 0" }}>
-                  <Send
-                    size={40}
-                    color={COLORS.success}
-                  />
-
-                  <h2>
-                    Thank You!
-                  </h2>
-
-                  <p
-                    style={{
-                      color: COLORS.textSecondary,
-                      lineHeight: 1.8,
-                    }}
-                  >
-                    Your message has been received successfully.
-                    Our FleetGuard support team will contact you
-                    within one business day.
-                  </p>
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
                 </div>
               ) : (
                 <form
@@ -276,7 +198,6 @@ export default function Contact() {
                   }}
                 >
                   <div>
-<<<<<<< HEAD
                     <label style={{ display: 'block', fontSize: FONT.size.xs, fontWeight: FONT.weight.medium, color: COLORS.textSecondary, marginBottom: SPACING[2] }}>Name</label>
                     <input required style={inputStyle} placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
                   </div>
@@ -298,123 +219,6 @@ export default function Contact() {
 
                   <button type="submit" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: SPACING[2], padding: `${SPACING[3]} ${SPACING[6]}`, borderRadius: RADIUS.btn, background: COLORS.primary, color: COLORS.white, fontSize: FONT.size.sm, fontWeight: FONT.weight.semibold, border: 'none', cursor: 'pointer', boxShadow: SHADOWS.glowSm }}>
                     Send Message <Send size={14} />
-=======
-                    <label>Name</label>
-
-                    <input
-                      required
-                      style={inputStyle}
-                      placeholder="Enter your full name"
-                      value={form.name}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          name: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div>
-                    <label>Email</label>
-
-                    <input
-                      required
-                      type="email"
-                      style={inputStyle}
-                      placeholder="Enter your email"
-                      value={form.email}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          email: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label
-                      style={{
-                        display: "block",
-                        fontSize: FONT.size.xs,
-                        color: COLORS.textSecondary,
-                        marginBottom: SPACING[2],
-                      }}
-                    >
-                      Subject
-                    </label>
-
-                    <input
-                      required
-                      style={inputStyle}
-                      placeholder="Enter subject"
-                      value={form.subject}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          subject: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  {/* Message */}
-
-                  <div>
-                    <label
-                      style={{
-                        display: "block",
-                        fontSize: FONT.size.xs,
-                        color: COLORS.textSecondary,
-                        marginBottom: SPACING[2],
-                      }}
-                    >
-                      Message
-                    </label>
-
-                    <textarea
-                      required
-                      rows={6}
-                      style={{
-                        ...inputStyle,
-                        resize: "vertical",
-                      }}
-                      placeholder="Describe your issue, feedback, or enquiry..."
-                      value={form.message}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          message: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-
-                  <button
-                    type="submit"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "14px",
-                      border: "none",
-                      borderRadius: RADIUS.btn,
-                      cursor: "pointer",
-                      background: COLORS.primary,
-                      color: COLORS.white,
-                      fontWeight: FONT.weight.semibold,
-                      fontSize: FONT.size.sm,
-                      boxShadow: SHADOWS.glowSm,
-                      transition: "0.3s",
-                    }}
-                  >
-                    Send Message
-
-                    <Send size={16} />
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
                   </button>
                 </form>
               )}

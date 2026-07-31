@@ -6,20 +6,12 @@ import NotificationBell from './notifications/NotificationBell';
 import '../pages/Notifications.css';
 
 const navLinks = [
-<<<<<<< HEAD
   { label: 'Home', to: '/' },
   { label: 'About', to: '/about' },
   { label: 'Features', to: '/features' },
   { label: 'Audit Logs', to: '/audit-logs' },
   { label: 'Notifications', to: '/notifications' },
   { label: 'Contact', to: '/contact' },
-=======
-  { label: 'Home',          to: '/' },
-  { label: 'About',         to: '/about' },
-  { label: 'Features',      to: '/features' },
-  { label: 'Audit Logs',    to: '/audit-logs' },
-  { label: 'Contact',       to: '/contact' },
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
 ];
 
 export default function Navbar() {
@@ -77,10 +69,6 @@ export default function Navbar() {
           </span>
         </NavLink>
 
-<<<<<<< HEAD
-=======
-        {/* Desktop nav links */}
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
         <nav className="fg-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: SPACING[8] }}>
           {navLinks.map(({ label, to }) => (
             <NavLink
@@ -97,10 +85,6 @@ export default function Navbar() {
           ))}
         </nav>
 
-<<<<<<< HEAD
-=======
-        {/* Desktop right actions */}
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
         <div className="fg-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: SPACING[3] }}>
           <NotificationBell />
           <NavLink
@@ -141,10 +125,6 @@ export default function Navbar() {
         </button>
       </div>
 
-<<<<<<< HEAD
-=======
-      {/* Mobile menu */}
->>>>>>> 39b9ba5 (Complete merge and keep local changes)
       {menuOpen && (
         <div className="fg-mobile-only-block" style={{ background: 'rgba(5,8,16,0.97)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${COLORS.border}`, padding: `${SPACING[4]} ${SPACING[6]}`, display: 'flex', flexDirection: 'column', gap: SPACING[1] }}>
           {navLinks.map(({ label, to }) => (

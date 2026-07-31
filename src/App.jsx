@@ -10,7 +10,7 @@ import AuditLog from './pages/AuditLog';
 import NotificationCenter from './pages/NotificationCenter';
 import Login from './pages/Login';
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
+import DriverDashboard from './modules/Driver/DriverDashboard';
 
 export default function App() {
   return (
@@ -25,13 +25,10 @@ export default function App() {
           <Route path="/audit-logs" element={<AuditLog />} />
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/login" element={<Login />} />
-         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/driver/dashboard" element={<DriverDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
-        </Routes>
-      </BrowserRouter>
-    </NotificationProvider>
-
   );
 }
