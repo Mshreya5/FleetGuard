@@ -30,9 +30,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/servicecenter/*" element={<ServiceCenterModule />} />
           <Route path="/fleetmanager/dashboard" element={<Home />} />
           <Route path="/driver/dashboard" element={<Home />} />
+          <Route path="/servicecenter/*" element={<ServiceCenterModule />} />
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
