@@ -45,4 +45,4 @@ const complianceSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("Compliance", complianceSchema);
+module.exports = mongoose.models.Compliance || mongoose.model("Compliance", complianceSchema);

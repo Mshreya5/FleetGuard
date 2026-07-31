@@ -26,4 +26,4 @@ const vehicleMileageSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('VehicleMileage', vehicleMileageSchema);
+module.exports = mongoose.models.VehicleMileage || mongoose.model('VehicleMileage', vehicleMileageSchema);

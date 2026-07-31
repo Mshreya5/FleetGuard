@@ -28,4 +28,4 @@ const historicalRecordSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('HistoricalRecord', historicalRecordSchema);
+module.exports = mongoose.models.HistoricalRecord || mongoose.model('HistoricalRecord', historicalRecordSchema);

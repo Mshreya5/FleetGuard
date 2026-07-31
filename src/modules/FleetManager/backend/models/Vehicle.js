@@ -45,7 +45,7 @@ const vehicleSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["Available", "Assigned", "Maintenance"],
+            enum: ["Available", "Assigned", "Under Service", "Maintenance", "Active", "Inactive", "Retired"],
             default: "Available"
         },
         assignedDriver: {
@@ -72,4 +72,4 @@ const vehicleSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("Vehicle", vehicleSchema);
+module.exports = mongoose.models.Vehicle || mongoose.model("Vehicle", vehicleSchema);
