@@ -34,7 +34,7 @@ export default function RecordServiceCost() {
 
   const fetchRecords = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/service-center/extensions/costs');
+      const response = await axios.get('/api/service-center/extensions/costs');
       setRecords(response.data);
     } catch (error) {
       console.error('Unable to fetch service costs', error);
@@ -107,13 +107,41 @@ export default function RecordServiceCost() {
             </label>
 
             <div className={styles.formActions}>
-              <button type="submit" className={styles.primaryButton}>Save Cost</button>
+              <button type="submit" className={styles.primaryButton}>Save Cost (Total: ₹{totalCost})</button>
             </div>
             {status && <p className={styles.sectionSubtitle}>{status}</p>}
           </form>
         </section>
 
-
+        {records.length > 0 && (
+          <section className={styles.cardSection}>
+            <div className={styles.sectionHeading}>
+              <h3>Saved Cost Records</h3>
+            </div>
+            <table className={styles.serviceTable}>
+              <thead>
+                <tr>
+                  <th>Vehicle</th>
+                  <th>Labour Cost</th>
+                  <th>Spare Parts</th>
+                  <th>Total Cost</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((r, i) => (
+                  <tr key={r._id || i}>
+                    <td>{r.vehicle}</td>
+                    <td>₹{r.labourCost}</td>
+                    <td>₹{r.sparePartsCost}</td>
+                    <td>₹{r.totalCost}</td>
+                    <td>{r.description || 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
       </div>
     </>
   );

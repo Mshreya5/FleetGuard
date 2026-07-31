@@ -38,7 +38,7 @@ export default function NextServiceSchedule() {
 
   const fetchSchedules = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/service-center/extensions/schedules');
+      const response = await axios.get('/api/service-center/extensions/schedules');
       setRecords(response.data);
     } catch (error) {
       console.error('Unable to fetch service schedules', error);
@@ -128,6 +128,16 @@ export default function NextServiceSchedule() {
               <strong>Next Service Date</strong>
               <span>{nextServiceDate ? nextServiceDate.toLocaleDateString() : '—'}</span>
             </article>
+            {records.length > 0 && (
+              <div style={{ marginTop: '16px' }}>
+                <strong style={{ fontSize: '12px', color: '#64748b' }}>Saved Schedules ({records.length})</strong>
+                <ul style={{ paddingLeft: '16px', margin: '8px 0', fontSize: '13px' }}>
+                  {records.slice(0, 5).map((rec, i) => (
+                    <li key={rec._id || i}>{rec.vehicle}: {rec.nextServiceMileage ? `${rec.nextServiceMileage} km` : 'Scheduled'}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </aside>
       </div>
