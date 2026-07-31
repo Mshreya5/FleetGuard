@@ -22,6 +22,20 @@ const connectDB = async () => {
       connectTimeoutMS: 5000
     });
     console.log(`[FleetGuard Unified Backend] MongoDB Connected: ${conn.connection.host} / DB: ${conn.connection.name}`);
+    
+    // Auto-clean legacy MongoDB indexes
+    try {
+      const vehColl = conn.connection.collection('vehicles');
+      const idxs = await vehColl.indexes().catch(() => []);
+      for (const idx of idxs) {
+        if (['vin_1', 'licensePlate_1', 'chassisNumber_1', 'engineNumber_1'].includes(idx.name)) {
+          await vehColl.dropIndex(idx.name).catch(() => {});
+        }
+      }
+    } catch (e) {
+      // Ignore index check errors
+    }
+
     return conn;
   } catch (error) {
     console.warn(`[FleetGuard Unified Backend] Primary MongoDB Atlas warning: ${error.message}. Attempting local fallback...`);
