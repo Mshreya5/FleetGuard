@@ -39,7 +39,9 @@ export default function NextServiceSchedule() {
   const fetchSchedules = async () => {
     try {
       const response = await axios.get('/api/service-center/extensions/schedules');
-      setRecords(response.data);
+      const data = response.data;
+      const items = Array.isArray(data) ? data : (data?.schedules || []);
+      setRecords(items);
     } catch (error) {
       console.error('Unable to fetch service schedules', error);
     }
@@ -54,7 +56,7 @@ export default function NextServiceSchedule() {
     if (!validate()) return;
 
     try {
-      await axios.post('http://localhost:5000/api/service-center/extensions/schedules', {
+      await axios.post('/api/service-center/extensions/schedules', {
         ...formValues,
         currentMileage: Number(formValues.currentMileage),
         serviceInterval: Number(formValues.serviceInterval),
@@ -66,6 +68,8 @@ export default function NextServiceSchedule() {
       setStatus(error.response?.data?.message || 'Unable to save schedule.');
     }
   };
+
+  const safeRecords = Array.isArray(records) ? records : [];
 
   return (
     <>
@@ -122,17 +126,17 @@ export default function NextServiceSchedule() {
           <div className={styles.submissionList}>
             <article className={styles.submissionItem}>
               <strong>Next Service Mileage</strong>
-              <span>{nextServiceMileage > 0 ? nextServiceMileage : '—'}</span>
+              <span>{nextServiceMileage > 0 ? `${nextServiceMileage} km` : '—'}</span>
             </article>
             <article className={styles.submissionItem}>
               <strong>Next Service Date</strong>
               <span>{nextServiceDate ? nextServiceDate.toLocaleDateString() : '—'}</span>
             </article>
-            {records.length > 0 && (
+            {safeRecords.length > 0 && (
               <div style={{ marginTop: '16px' }}>
-                <strong style={{ fontSize: '12px', color: '#64748b' }}>Saved Schedules ({records.length})</strong>
+                <strong style={{ fontSize: '12px', color: '#94a3b8' }}>Saved Schedules ({safeRecords.length})</strong>
                 <ul style={{ paddingLeft: '16px', margin: '8px 0', fontSize: '13px' }}>
-                  {records.slice(0, 5).map((rec, i) => (
+                  {safeRecords.slice(0, 5).map((rec, i) => (
                     <li key={rec._id || i}>{rec.vehicle}: {rec.nextServiceMileage ? `${rec.nextServiceMileage} km` : 'Scheduled'}</li>
                   ))}
                 </ul>

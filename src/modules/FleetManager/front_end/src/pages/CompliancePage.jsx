@@ -111,7 +111,7 @@ const CompliancePage = ({ showToast, selectedVehicleId }) => {
                                         </td>
                                         <td style={{ ...COMMON_STYLES.tableCell, textAlign: 'right' }}>
                                             <a
-                                                href={`${API_SERVER_URL}${doc.filePath}`}
+                                                href={doc.filePath?.startsWith('data:') ? doc.filePath : `${API_SERVER_URL}${doc.filePath}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 style={{ ...COMMON_STYLES.buttonSecondary, textDecoration: 'none', padding: '4px 10px', fontSize: '12px' }}

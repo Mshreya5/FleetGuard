@@ -35,63 +35,9 @@ select {
   color: var(--text);
 }
 
-.sidebar {
-  width: 260px;
-  padding: 24px 18px;
-  background: #111827;
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.sidebarBrand {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.sidebarLabel {
-  font-size: 0.82rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.navList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.navItem {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s ease;
-}
-
-.navItem:hover {
-  background: rgba(59, 130, 246, 0.12);
-  color: var(--text);
-}
-
-.navItemActive {
-  background: rgba(59, 130, 246, 0.16);
-  color: var(--text);
-  border-color: rgba(59, 130, 246, 0.28);
-}
-
 .mainContent {
   flex: 1;
-  padding: 28px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -102,11 +48,11 @@ select {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  padding: 22px 24px;
-  border-radius: 18px;
+  padding: 20px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--card);
-  box-shadow: 0 8px 24px rgba(2, 8, 23, 0.25);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
 .eyebrow {
@@ -120,28 +66,31 @@ select {
 
 .pageTitle {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .pageSubtitle {
   margin: 6px 0 0;
   color: var(--muted);
+  font-size: 13px;
   max-width: 700px;
 }
 
 .headerBadge {
-  padding: 10px 14px;
-  border-radius: 999px;
+  padding: 8px 12px;
+  border-radius: 6px;
   background: rgba(59, 130, 246, 0.16);
   color: var(--primary);
   font-weight: 600;
+  font-size: 12px;
   white-space: nowrap;
 }
 
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .metricCard,
@@ -150,18 +99,18 @@ select {
 .formCard {
   border: 1px solid var(--border);
   background: var(--card);
-  border-radius: 16px;
-  box-shadow: 0 6px 22px rgba(2, 8, 23, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
 .metricCard {
-  padding: 18px;
+  padding: 20px;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .metricCard:hover {
   transform: translateY(-2px);
-  border-color: rgba(59, 130, 246, 0.35);
+  border-color: var(--primary);
 }
 
 .metricHeader {
@@ -177,16 +126,19 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .metricTitle {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .metricValue {
-  font-size: 1.6rem;
+  font-size: 24px;
   font-weight: 700;
   margin-bottom: 4px;
 }
@@ -194,7 +146,7 @@ select {
 .metricSubtitle {
   margin: 0;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 13px;
 }
 
 .primary {
@@ -228,7 +180,7 @@ select {
 .panelCompact,
 .tableCard,
 .formCard {
-  padding: 18px;
+  padding: 20px;
 }
 
 .sectionHeader {
@@ -240,13 +192,14 @@ select {
 
 .sectionTitle {
   margin: 0;
-  font-size: 1.03rem;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .sectionSubtitle {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 13px;
 }
 
 .actionList {
@@ -258,24 +211,27 @@ select {
 .actionButton {
   width: 100%;
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 6px;
   border: 1px solid var(--border);
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--bg);
   color: var(--text);
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .actionButton:hover {
-  transform: translateY(-1px);
-  border-color: rgba(59, 130, 246, 0.35);
+  border-color: var(--primary);
 }
 
 .tableWrap {
   overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
 }
 
 .table {
@@ -285,25 +241,28 @@ select {
 
 .table th,
 .table td {
-  padding: 12px 10px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   text-align: left;
-  font-size: 0.92rem;
+  font-size: 13px;
 }
 
 .table th {
   color: var(--muted);
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--bg);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .priorityLow,
@@ -341,26 +300,22 @@ select {
 .primaryButton,
 .secondaryButton {
   border: none;
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s ease;
-}
-
-.viewButton:hover,
-.primaryButton:hover,
-.secondaryButton:hover {
-  transform: translateY(-1px);
 }
 
 .viewButton,
 .primaryButton {
   background: var(--primary);
-  color: var(--text);
+  color: #ffffff;
 }
 
 .secondaryButton {
-  background: rgba(30, 41, 59, 0.9);
+  background: transparent;
   color: var(--text);
   border: 1px solid var(--border);
 }
@@ -375,13 +330,16 @@ select {
 .filterBar input,
 .filterBar select,
 .field input,
+.field select,
 .field textarea {
   width: 100%;
-  padding: 11px 12px;
-  border-radius: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
   border: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--bg);
   color: var(--text);
+  font-size: 14px;
+  outline: none;
 }
 
 .filterBar input::placeholder,
@@ -428,17 +386,18 @@ select {
 .activityTitle {
   margin: 0 0 4px;
   font-weight: 600;
+  font-size: 14px;
 }
 
 .activityDetail {
   margin: 0 0 4px;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 13px;
 }
 
 .activityTime {
   color: var(--primary);
-  font-size: 0.8rem;
+  font-size: 12px;
 }
 
 .formLayout {
@@ -464,7 +423,9 @@ select {
   flex-direction: column;
   gap: 6px;
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .field span {
@@ -473,6 +434,7 @@ select {
 
 .errorText {
   color: var(--danger);
+  font-size: 13px;
 }
 
 .formActions {
@@ -484,10 +446,11 @@ select {
 .emptyState {
   margin-top: 14px;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px dashed var(--border);
   color: var(--muted);
   text-align: center;
+  font-size: 13px;
 }
 
 .submissionList {
@@ -499,12 +462,13 @@ select {
 
 .submissionItem {
   padding: 12px;
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.55);
+  border-radius: 6px;
+  background: var(--bg);
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 4px;
+  font-size: 13px;
 }
 
 .submissionItem span,
@@ -512,7 +476,6 @@ select {
   color: var(--muted);
 }
 
-/* ── Tablet (≤1100px) ── */
 @media (max-width: 1100px) {
   .cardGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -522,40 +485,11 @@ select {
   .formLayout {
     grid-template-columns: 1fr;
   }
-
-  .sidebar {
-    width: 220px;
-  }
 }
 
-/* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
-  .dashboardShell {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 16px 14px;
-    gap: 12px;
-  }
-
-  .navList {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-  }
-
-  .navItem {
-    padding: 10px 10px;
-    font-size: 0.82rem;
-    gap: 6px;
-  }
-
   .mainContent {
-    padding: 14px;
+    padding: 16px;
     gap: 14px;
   }
 
@@ -563,10 +497,6 @@ select {
     flex-direction: column;
     align-items: flex-start;
     padding: 16px;
-  }
-
-  .pageTitle {
-    font-size: 1.25rem;
   }
 
   .cardGrid {
@@ -588,37 +518,11 @@ select {
     min-width: unset;
     width: 100%;
   }
-
-  .table th,
-  .table td {
-    padding: 10px 8px;
-    font-size: 0.82rem;
-    white-space: nowrap;
-  }
-
-  .metricValue {
-    font-size: 1.3rem;
-  }
-
-  .panelCompact,
-  .tableCard,
-  .formCard {
-    padding: 14px;
-  }
 }
 
-/* ── Small Mobile (≤480px) ── */
 @media (max-width: 480px) {
   .cardGrid {
     grid-template-columns: 1fr;
-  }
-
-  .navList {
-    grid-template-columns: 1fr;
-  }
-
-  .pageTitle {
-    font-size: 1.1rem;
   }
 
   .formActions {

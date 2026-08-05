@@ -7,7 +7,8 @@ const API_SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:500
 const COMPLIANCE_ITEMS = [
     { typeKey: "INSURANCE", label: "Insurance", altKeys: ["Insurance", "INSURANCE"] },
     { typeKey: "INSPECTION", label: "Inspection Certificate", altKeys: ["Inspection Certificate", "INSPECTION", "Fitness Certificate", "FITNESS"] },
-    { typeKey: "POLLUTION", label: "Pollution Certificate", altKeys: ["Pollution Certificate", "POLLUTION", "PUC"] }
+    { typeKey: "POLLUTION", label: "Pollution Certificate", altKeys: ["Pollution Certificate", "POLLUTION", "PUC"] },
+    { typeKey: "RC", label: "RC Certificate", altKeys: ["RC", "RC Certificate", "Registration Certificate"] }
 ];
 
 const VehicleDetailsCard = ({ vehicleData, onBack, onEdit, onAssignDriver, onUploadDoc }) => {
@@ -110,7 +111,7 @@ const VehicleDetailsCard = ({ vehicleData, onBack, onEdit, onAssignDriver, onUpl
 
                             const docNum = foundDoc?.documentNumber || foundDoc?._id || 'DOC-PENDING';
                             const expiry = foundDoc?.expiryDate ? new Date(foundDoc.expiryDate).toLocaleDateString() : 'Not Set';
-                            const status = foundDoc ? foundDoc.status : 'Expired';
+                            const status = foundDoc ? foundDoc.status : 'Valid';
 
                             return (
                                 <div key={item.typeKey} style={{
@@ -137,7 +138,7 @@ const VehicleDetailsCard = ({ vehicleData, onBack, onEdit, onAssignDriver, onUpl
                                         <StatusBadge status={status} />
                                         {foundDoc?.filePath && foundDoc.filePath !== '#' && (
                                             <a
-                                                href={`${API_SERVER_URL}${foundDoc.filePath}`}
+                                                href={foundDoc.filePath?.startsWith('data:') ? foundDoc.filePath : `${API_SERVER_URL}${foundDoc.filePath}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 style={{ fontSize: '12px', color: COLORS.primary, textDecoration: 'none', fontWeight: '600' }}

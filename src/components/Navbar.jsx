@@ -1,28 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { Truck, Menu, X, UserCircle2 } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Truck, Menu, X, UserCircle2, LogOut } from 'lucide-react';
 import { COLORS, SHADOWS, RADIUS, FONT, SPACING } from '../tokens';
-import NotificationBell from './notifications/NotificationBell';
+import { useAuth } from '../context/AuthContext';
 import '../pages/Notifications.css';
-
-const navLinks = [
-  { label: 'Home', to: '/' },
-  { label: 'About', to: '/about' },
-  { label: 'Features', to: '/features' },
-  { label: 'Audit Logs', to: '/audit-logs' },
-  { label: 'Notifications', to: '/notifications' },
-  { label: 'Contact', to: '/contact' },
-];
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const getLinkStyle = ({ isActive }) => ({
     fontSize: FONT.size.sm,
@@ -55,6 +53,15 @@ export default function Navbar() {
     justifyContent: 'space-between',
   };
 
+  const navLinks = [
+    { label: 'Home', to: '/' },
+    { label: 'About', to: '/about' },
+    { label: 'Features', to: '/features' },
+    { label: 'Contact', to: '/contact' },
+    ...(isAuthenticated ? [{ label: 'Notifications', to: '/notifications' }] : []),
+    ...(isAuthenticated && ['Admin', 'Fleet Manager'].includes(user?.role) ? [{ label: 'Audit Logs', to: '/audit-logs' }] : []),
+  ];
+
   return (
     <header style={headerStyle}>
       <div style={innerStyle}>
@@ -86,32 +93,87 @@ export default function Navbar() {
         </nav>
 
         <div className="fg-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: SPACING[3] }}>
-          <NotificationBell />
-          <NavLink
-            to="/profile"
-            title="My Profile"
-            style={({ isActive }) => ({
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: isActive ? 'rgba(74,144,226,0.22)' : 'rgba(74,144,226,0.08)',
-              border: '1px solid rgba(74,144,226,0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-              transition: 'background 0.2s ease',
-            })}
-          >
-            <UserCircle2 size={20} color={COLORS.primaryLight} strokeWidth={1.8} />
-          </NavLink>
-          <a
-            href="/login"
-            className="fg-btn-primary fg-pulse-glow"
-            style={{ display: 'inline-flex', alignItems: 'center', padding: `${SPACING[2]} ${SPACING[5]}`, borderRadius: RADIUS.btn, background: COLORS.primary, color: COLORS.white, fontSize: FONT.size.sm, fontWeight: FONT.weight.semibold, textDecoration: 'none' }}
-          >
-            Login
-          </a>
+          {isAuthenticated ? (
+            <>
+              <NavLink
+                to="/profile"
+                title={`My Profile (${user?.name || user?.email || 'User'})`}
+                style={({ isActive }) => ({
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: isActive ? 'rgba(74,144,226,0.22)' : 'rgba(74,144,226,0.08)',
+                  border: '1px solid rgba(74,144,226,0.25)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textDecoration: 'none',
+                  transition: 'background 0.2s ease',
+                  overflow: 'hidden',
+                })}
+              >
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <UserCircle2 size={20} color={COLORS.primaryLight} strokeWidth={1.8} />
+                )}
+              </NavLink>
+
+              <button
+                onClick={handleLogout}
+                title="Logout"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: SPACING[2],
+                  padding: `${SPACING[2]} ${SPACING[4]}`,
+                  borderRadius: RADIUS.btn,
+                  background: 'rgba(239,68,68,0.1)',
+                  border: '1px solid rgba(239,68,68,0.25)',
+                  color: COLORS.danger,
+                  fontSize: FONT.size.sm,
+                  fontWeight: FONT.weight.semibold,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <LogOut size={14} /> Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink
+                to="/register"
+                style={{
+                  fontSize: FONT.size.sm,
+                  fontWeight: FONT.weight.semibold,
+                  color: COLORS.primaryLight,
+                  textDecoration: 'none',
+                  padding: `${SPACING[2]} ${SPACING[4]}`,
+                }}
+              >
+                Register
+              </NavLink>
+
+              <NavLink
+                to="/login"
+                className="fg-btn-primary fg-pulse-glow"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: `${SPACING[2]} ${SPACING[5]}`,
+                  borderRadius: RADIUS.btn,
+                  background: COLORS.primary,
+                  color: COLORS.white,
+                  fontSize: FONT.size.sm,
+                  fontWeight: FONT.weight.semibold,
+                  textDecoration: 'none',
+                }}
+              >
+                Login
+              </NavLink>
+            </>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -138,20 +200,43 @@ export default function Navbar() {
               {label}
             </NavLink>
           ))}
-          <NavLink
-            to="/profile"
-            onClick={() => setMenuOpen(false)}
-            style={({ isActive }) => ({ padding: `${SPACING[3]} 0`, fontSize: FONT.size.sm, fontWeight: FONT.weight.medium, color: isActive ? COLORS.primaryLight : COLORS.textSecondary, textDecoration: 'none', borderBottom: `1px solid ${COLORS.border}`, display: 'block' })}
-          >
-            My Profile
-          </NavLink>
-          <a
-            href="/login"
-            onClick={() => setMenuOpen(false)}
-            style={{ marginTop: SPACING[3], padding: `${SPACING[3]} ${SPACING[5]}`, borderRadius: RADIUS.btn, background: COLORS.primary, color: COLORS.white, fontSize: FONT.size.sm, fontWeight: FONT.weight.semibold, textDecoration: 'none', textAlign: 'center', display: 'block' }}
-          >
-            Login
-          </a>
+
+          {isAuthenticated ? (
+            <>
+              <NavLink
+                to="/profile"
+                onClick={() => setMenuOpen(false)}
+                style={({ isActive }) => ({ padding: `${SPACING[3]} 0`, fontSize: FONT.size.sm, fontWeight: FONT.weight.medium, color: isActive ? COLORS.primaryLight : COLORS.textSecondary, textDecoration: 'none', borderBottom: `1px solid ${COLORS.border}`, display: 'block' })}
+              >
+                My Profile ({user?.name || 'User'})
+              </NavLink>
+
+              <button
+                onClick={() => { setMenuOpen(false); handleLogout(); }}
+                style={{ marginTop: SPACING[3], padding: `${SPACING[3]} ${SPACING[5]}`, borderRadius: RADIUS.btn, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: COLORS.danger, fontSize: FONT.size.sm, fontWeight: FONT.weight.semibold, width: '100%', cursor: 'pointer' }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink
+                to="/register"
+                onClick={() => setMenuOpen(false)}
+                style={{ padding: `${SPACING[3]} 0`, fontSize: FONT.size.sm, fontWeight: FONT.weight.medium, color: COLORS.primaryLight, textDecoration: 'none', borderBottom: `1px solid ${COLORS.border}`, display: 'block' }}
+              >
+                Register
+              </NavLink>
+
+              <NavLink
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                style={{ marginTop: SPACING[3], padding: `${SPACING[3]} ${SPACING[5]}`, borderRadius: RADIUS.btn, background: COLORS.primary, color: COLORS.white, fontSize: FONT.size.sm, fontWeight: FONT.weight.semibold, textDecoration: 'none', textAlign: 'center', display: 'block' }}
+              >
+                Login
+              </NavLink>
+            </>
+          )}
         </div>
       )}
     </header>

@@ -89,7 +89,7 @@ const FleetSummaryReport = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {report.assignments.map((a) => (
+                  {(report?.assignments || []).map((a) => (
                     <tr key={a.registrationNumber}>
                       <td>{a.registrationNumber}</td>
                       <td>{a.driver}</td>

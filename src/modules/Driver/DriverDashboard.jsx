@@ -6,12 +6,10 @@ import {
   History,
   AlertTriangle,
   Wrench,
-  Home,
   ShieldCheck,
   PlayCircle,
-  ArrowLeft,
+  Search,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import {
   fetchDriverDashboard,
   fetchAssignments,
@@ -47,8 +45,16 @@ const initialIssueForm = {
   date: new Date().toISOString().slice(0, 10),
 };
 
+const pageCardStyle = {
+  backgroundColor: '#1e293b',
+  border: '1px solid #334155',
+  borderRadius: '10px',
+  padding: '20px',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)',
+  color: '#f1f5f9',
+};
+
 export default function DriverDashboard() {
-  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [serviceHistory, setServiceHistory] = useState([]);
@@ -58,9 +64,8 @@ export default function DriverDashboard() {
   const [checklistMessage, setChecklistMessage] = useState('');
   const [issueForm, setIssueForm] = useState(initialIssueForm);
   const [issueMessage, setIssueMessage] = useState('');
-  const [activeSection, setActiveSection] = useState('dashboard');
-  const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(true);
-  const [hoveredItem, setHoveredItem] = useState(null);
+  const [activeSection, setActiveSection] = useState('assigned-vehicle');
+  const [searchTerm, setSearchTerm] = useState('');
   const sectionRefs = useRef({});
 
   const loadAll = async () => {
@@ -68,29 +73,42 @@ export default function DriverDashboard() {
     setError('');
 
     try {
-      const [dashboardRes, assignmentRes, serviceRes] = await Promise.all([
+      const [dashboardRes, assignmentRes, serviceRes] = await Promise.allSettled([
         fetchDriverDashboard(),
         fetchAssignments(),
         fetchServiceHistory(),
       ]);
 
-      setDashboard(dashboardRes.data);
-      setAssignments(assignmentRes.data || []);
-      setServiceHistory(serviceRes.data || []);
+      if (dashboardRes.status === 'fulfilled' && dashboardRes.value?.data) {
+        setDashboard(dashboardRes.value.data);
+        const currentChecklist = dashboardRes.value.data?.checklist || null;
+        if (currentChecklist) {
+          setChecklist({
+            tyres: Boolean(currentChecklist.tyres),
+            brakes: Boolean(currentChecklist.brakes),
+            lights: Boolean(currentChecklist.lights),
+            fuel: Boolean(currentChecklist.fuel),
+            mirrors: Boolean(currentChecklist.mirrors),
+            horn: Boolean(currentChecklist.horn),
+          });
+        }
+      }
 
-      const currentChecklist = dashboardRes.data?.checklist || null;
-      if (currentChecklist) {
-        setChecklist({
-          tyres: Boolean(currentChecklist.tyres),
-          brakes: Boolean(currentChecklist.brakes),
-          lights: Boolean(currentChecklist.lights),
-          fuel: Boolean(currentChecklist.fuel),
-          mirrors: Boolean(currentChecklist.mirrors),
-          horn: Boolean(currentChecklist.horn),
-        });
+      if (assignmentRes.status === 'fulfilled' && assignmentRes.value?.data) {
+        const assignList = Array.isArray(assignmentRes.value.data) ? assignmentRes.value.data : (assignmentRes.value.data.assignments || []);
+        setAssignments(assignList);
+      } else {
+        setAssignments([]);
+      }
+
+      if (serviceRes.status === 'fulfilled' && serviceRes.value?.data) {
+        const sList = Array.isArray(serviceRes.value.data) ? serviceRes.value.data : (serviceRes.value.data.serviceHistory || []);
+        setServiceHistory(sList);
+      } else {
+        setServiceHistory([]);
       }
     } catch (err) {
-      setError(err?.response?.data?.message || 'Unable to load driver dashboard data right now.');
+      setError('Unable to load driver dashboard data right now.');
     } finally {
       setLoading(false);
     }
@@ -100,156 +118,99 @@ export default function DriverDashboard() {
     loadAll();
   }, []);
 
+  const checklistComplete = useMemo(
+    () => Object.values(checklist).every(Boolean),
+    [checklist]
+  );
+
   const todayTasks = useMemo(() => {
-    const tasks = [];
-    if (dashboard?.assignment) {
-      tasks.push('Confirm assigned vehicle details');
-    }
-    if (dashboard?.checklist?.status === 'Completed') {
-      tasks.push('Checklist submitted and ready for trip');
-    } else {
-      tasks.push('Complete the pre-trip checklist');
-    }
-    tasks.push('Review latest notifications');
-    return tasks;
+    const defaultTasks = [
+      'Perform mandatory morning pre-trip inspection',
+      'Verify valid vehicle insurance and PUC compliance',
+      'Log trip odometer and fuel readings',
+    ];
+    return dashboard?.todayTasks?.length ? dashboard.todayTasks : defaultTasks;
   }, [dashboard]);
 
-  const complianceLabel = dashboard?.complianceStatus || 'Pending';
-  const checklistComplete = Object.values(checklist).every(Boolean);
+  const complianceLabel = useMemo(() => {
+    if (dashboard?.assignment?.complianceStatus) return dashboard.assignment.complianceStatus;
+    if (dashboard?.complianceStatus) return dashboard.complianceStatus;
+    return 'Compliant';
+  }, [dashboard]);
 
   const handleChecklistChange = (key) => {
-    setChecklist((current) => ({ ...current, [key]: !current[key] }));
+    setChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleChecklistSubmit = async () => {
-    setChecklistMessage('');
-
     try {
-      await submitChecklist({ ...checklist, vehicleId: dashboard?.assignment?.vehicleId || 'VH-102' });
-      setChecklistMessage('Checklist submitted successfully.');
-      await loadAll();
+      await submitChecklist(checklist);
+      setChecklistMessage('Pre-trip checklist saved successfully to MongoDB.');
+      loadAll();
     } catch (err) {
-      setChecklistMessage(err?.response?.data?.message || 'Checklist submission failed.');
+      setChecklistMessage(err?.response?.data?.message || 'Failed to submit checklist.');
     }
   };
 
   const handleStartTrip = async () => {
     try {
       await startTrip();
-      setChecklistMessage('Trip started successfully.');
-      await loadAll();
+      setChecklistMessage('Trip started successfully! Drive safely.');
+      loadAll();
     } catch (err) {
-      setChecklistMessage(err?.response?.data?.message || 'Trip could not be started yet.');
+      setChecklistMessage(err?.response?.data?.message || 'Unable to start trip.');
     }
   };
 
   const handleIssueSubmit = async (e) => {
     e.preventDefault();
-    setIssueMessage('');
-
     try {
       await submitIssueReport(issueForm);
-      setIssueMessage('Issue report saved successfully.');
+      setIssueMessage('Vehicle issue report submitted successfully.');
       setIssueForm(initialIssueForm);
-      await loadAll();
+      loadAll();
     } catch (err) {
-      setIssueMessage(err?.response?.data?.message || 'Unable to save issue report.');
+      setIssueMessage(err?.response?.data?.message || 'Failed to report vehicle issue.');
     }
-  };
-
-  const pageCardStyle = {
-    background: '#1E293B',
-    border: '1px solid rgba(255,255,255,0.06)',
-    borderRadius: '18px',
-    padding: '18px',
-    boxShadow: '0 10px 30px rgba(2, 6, 23, 0.38)',
   };
 
   const handleSidebarClick = (sectionId) => {
-    if (sectionId === 'dashboard') {
-      setIsDashboardMenuOpen((current) => !current);
-      return;
-    }
-
+    setActiveSection(sectionId);
     const target = sectionRefs.current[sectionId];
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setActiveSection(sectionId);
     }
   };
 
-  useEffect(() => {
-    if (loading || error) {
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleEntry = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-        if (visibleEntry?.target?.id) {
-          setActiveSection(visibleEntry.target.id);
-        }
-      },
-      {
-        root: null,
-        threshold: [0.2, 0.45, 0.7],
-        rootMargin: '-20% 0px -45% 0px',
-      }
-    );
-
-    Object.values(sectionRefs.current).forEach((node) => {
-      if (node) observer.observe(node);
-    });
-
-    return () => observer.disconnect();
-  }, [loading, error]);
-
   return (
-    <div style={{ minHeight: '100vh', background: '#0F172A', color: '#F8FAFC', display: 'flex', overflow: 'hidden' }}>
-      <aside style={{ width: '260px', background: '#111827', padding: '20px', position: 'fixed', left: 0, top: 0, bottom: 0, borderRight: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 0 0 1px rgba(255,255,255,0.03)' }}>
-        <div style={{ fontSize: '24px', fontWeight: 800, marginBottom: '28px' }}>FleetGuard</div>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <button
-            type="button"
-            onClick={() => handleSidebarClick('dashboard')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              background: activeSection === 'dashboard' ? '#2563EB' : hoveredItem === 'dashboard' ? 'rgba(59,130,246,0.22)' : 'transparent',
-              color: '#F8FAFC',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '12px 14px',
-              textAlign: 'left',
-              fontSize: '15px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              boxShadow: activeSection === 'dashboard' ? '0 6px 18px rgba(37,99,235,0.35)' : 'none',
-              fontWeight: activeSection === 'dashboard' ? 700 : 500,
-            }}
-            onMouseEnter={() => setHoveredItem('dashboard')}
-            onMouseLeave={() => setHoveredItem(null)}
-          >
-            <Home size={16} />
-            <span style={{ fontSize: '14px', transition: 'transform 0.25s ease' }}>{isDashboardMenuOpen ? '▼' : '▶'}</span>
-            <span>Dashboard</span>
-          </button>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f1f5f9', display: 'flex' }}>
+      {/* Standardized Master Sidebar */}
+      <aside
+        style={{
+          width: '240px',
+          backgroundColor: '#1e293b',
+          borderRight: '1px solid #334155',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          zIndex: 110,
+          paddingTop: '16px'
+        }}
+      >
+        <div>
+          <div style={{ padding: '0 20px 20px 20px', borderBottom: '1px solid #334155' }}>
+            <div style={{ fontSize: '18px', fontWeight: '800', color: '#3b82f6' }}>
+              FleetGuard
+            </div>
+            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              DRIVER PORTAL
+            </div>
+          </div>
 
-          <div
-            style={{
-              overflow: 'hidden',
-              maxHeight: isDashboardMenuOpen ? '520px' : '0px',
-              transition: 'max-height 0.25s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              paddingLeft: '12px',
-            }}
-          >
+          <nav style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {SIDEBAR_ITEMS.map(({ icon: Icon, label, sectionId }) => {
               const active = activeSection === sectionId;
               return (
@@ -257,302 +218,300 @@ export default function DriverDashboard() {
                   key={label}
                   type="button"
                   onClick={() => handleSidebarClick(sectionId)}
-                  onMouseEnter={() => setHoveredItem(sectionId)}
-                  onMouseLeave={() => setHoveredItem(null)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    background: active ? '#2563EB' : hoveredItem === sectionId ? 'rgba(59,130,246,0.22)' : 'transparent',
-                    color: '#F8FAFC',
+                    padding: '10px 14px',
+                    borderRadius: '6px',
                     border: 'none',
-                    borderRadius: '12px',
-                    padding: '10px 12px',
-                    textAlign: 'left',
-                    fontSize: '14px',
+                    backgroundColor: active ? '#3b82f6' : 'transparent',
+                    color: active ? '#ffffff' : '#f1f5f9',
+                    fontSize: '13px',
+                    fontWeight: active ? '700' : '500',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: active ? '0 6px 18px rgba(37,99,235,0.35)' : 'none',
-                    fontWeight: active ? 700 : 500,
+                    textAlign: 'left',
+                    transition: 'background-color 0.2s'
                   }}
                 >
-                  <Icon size={15} />
+                  <Icon size={16} />
                   <span>{label}</span>
                 </button>
               );
             })}
-          </div>
-        </nav>
+          </nav>
+        </div>
       </aside>
 
-      <main style={{ marginLeft: '260px', width: 'calc(100% - 260px)', padding: '26px', overflowY: 'auto', scrollBehavior: 'smooth' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', padding: '8px 0' }}>
-          <div>
-            <div style={{ color: '#94A3B8', fontSize: '14px' }}>Driver Dashboard</div>
-            <h1 style={{ fontSize: '32px', fontWeight: 700, margin: '4px 0 0' }}>Vehicle Operations</h1>
+      {/* Main Wrapper */}
+      <div style={{ flex: 1, marginLeft: '240px', display: 'flex', flexDirection: 'column', minHeight: '100vh', width: 'calc(100% - 240px)' }}>
+        {/* Standardized Master Top Navbar */}
+        <header style={{
+          minHeight: '64px',
+          backgroundColor: '#1e293b',
+          borderBottom: '1px solid #334155',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '10px 16px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          gap: '12px',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '18px', fontWeight: '800', color: '#3b82f6', letterSpacing: '0.5px' }}>
+              FleetGuard
+            </span>
+            <span style={{ color: '#334155' }}>|</span>
+            <span style={{ fontSize: '14px', fontWeight: '600', color: '#f1f5f9' }}>
+              Driver
+            </span>
           </div>
-          <button type="button" onClick={() => navigate('/login')} style={{ background: 'transparent', color: '#F8FAFC', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' }}>
-            <ArrowLeft size={16} />
-            Go Back
-          </button>
-        </div>
 
-        {loading ? (
-          <div style={pageCardStyle}>Loading driver data...</div>
-        ) : error ? (
-          <div style={{ ...pageCardStyle, color: '#FCA5A5' }}>{error}</div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '18px' }}>
-            <div
-              id="dashboard"
-              ref={(node) => {
-                sectionRefs.current.dashboard = node;
-              }}
+          <div style={{ flex: '1 1 200px', maxWidth: '360px', position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search vehicle, tasks, service..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               style={{
-                ...pageCardStyle,
-                scrollMarginTop: '90px',
-                border: activeSection === 'dashboard' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'dashboard'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
+                width: '100%',
+                backgroundColor: '#0f172a',
+                border: '1px solid #334155',
+                borderRadius: '20px',
+                padding: '8px 16px 8px 36px',
+                color: '#f1f5f9',
+                fontSize: '13px',
+                outline: 'none',
+                boxSizing: 'border-box'
               }}
-            >
-              <div style={{ color: '#94A3B8', fontSize: '14px', marginBottom: '10px' }}>Assigned Vehicle</div>
-              <div style={{ fontSize: '18px', fontWeight: 700 }}>{dashboard?.assignment?.vehicleName || 'Truck 12A'}</div>
-              <div style={{ color: '#94A3B8', marginTop: '6px' }}>{dashboard?.assignment?.vehicleNumber || 'DL-07-TR-1812'}</div>
-              <div style={{ marginTop: '16px', color: '#F8FAFC' }}>Tracker: {dashboard?.assignment?.tracker || 'GPS Ready'}</div>
+            />
+            <Search
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#94a3b8',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              width: '34px',
+              height: '34px',
+              borderRadius: '50%',
+              backgroundColor: '#3b82f6',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: '700',
+              fontSize: '14px'
+            }}>
+              DR
             </div>
+          </div>
+        </header>
 
-            <div
-              id="dashboard-tasks"
-              ref={(node) => {
-                sectionRefs.current['dashboard-tasks'] = node;
-              }}
-              style={{
-                ...pageCardStyle,
-                scrollMarginTop: '90px',
-                border: activeSection === 'dashboard-tasks' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'dashboard-tasks'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
-              }}
-            >
-              <div style={{ color: '#94A3B8', fontSize: '14px', marginBottom: '10px' }}>Today's Tasks</div>
-              <ul style={{ paddingLeft: '18px', color: '#F8FAFC', display: 'grid', gap: '8px' }}>
-                {todayTasks.map((task) => <li key={task}>{task}</li>)}
-              </ul>
-            </div>
-
-            <div
-              id="compliance-status"
-              ref={(node) => {
-                sectionRefs.current['compliance-status'] = node;
-              }}
-              style={{
-                ...pageCardStyle,
-                scrollMarginTop: '90px',
-                border: activeSection === 'compliance-status' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'compliance-status'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
-              }}
-            >
-              <div style={{ color: '#94A3B8', fontSize: '14px', marginBottom: '10px' }}>Compliance Summary</div>
-              <div style={{ fontSize: '30px', fontWeight: 700 }}>{complianceLabel}</div>
-              <div style={{ color: '#94A3B8', marginTop: '6px' }}>Insurance due: {dashboard?.assignment?.insuranceExpiry ? new Date(dashboard.assignment.insuranceExpiry).toLocaleDateString() : 'N/A'}</div>
-            </div>
-
-            <div
-              id="pre-trip-checklist"
-              ref={(node) => {
-                sectionRefs.current['pre-trip-checklist'] = node;
-              }}
-              style={{
-                ...pageCardStyle,
-                scrollMarginTop: '90px',
-                border: activeSection === 'pre-trip-checklist' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'pre-trip-checklist'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
-              }}
-            >
-              <div style={{ color: '#94A3B8', fontSize: '14px', marginBottom: '10px' }}>Pending Checklist</div>
-              <div style={{ fontSize: '30px', fontWeight: 700 }}>{dashboard?.pendingChecklistCount ?? 6}</div>
-              <div style={{ color: '#94A3B8', marginTop: '6px' }}>Checklist status: {dashboard?.checklist?.status || 'Pending'}</div>
-            </div>
-
-            <div
-              id="notifications"
-              ref={(node) => {
-                sectionRefs.current.notifications = node;
-              }}
-              style={{
-                ...pageCardStyle,
-                gridColumn: '1 / -1',
-                scrollMarginTop: '90px',
-                border: activeSection === 'notifications' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'notifications'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
-              }}
-            >
-              <div style={{ color: '#94A3B8', fontSize: '14px', marginBottom: '10px' }}>Recent Notifications</div>
-              <div style={{ display: 'grid', gap: '10px' }}>
-                {(dashboard?.notifications || []).map((item) => (
-                  <div key={item._id || item.id} style={{ background: '#243244', borderRadius: '12px', padding: '12px' }}>
-                    <div style={{ fontWeight: 700 }}>{item.title}</div>
-                    <div style={{ color: '#94A3B8', marginTop: '4px' }}>{item.message}</div>
+        {/* Content Body */}
+        <main style={{ flex: 1, padding: '24px', backgroundColor: '#0f172a', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {loading ? (
+            <div style={pageCardStyle}>Loading driver data...</div>
+          ) : error ? (
+            <div style={{ ...pageCardStyle, color: '#ef4444' }}>{error}</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '18px' }}>
+              <div
+                id="assigned-vehicle"
+                ref={(node) => { sectionRefs.current['assigned-vehicle'] = node; }}
+                style={pageCardStyle}
+              >
+                <div style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px' }}>Assigned Vehicle</div>
+                <div style={{ fontSize: '20px', fontWeight: 700 }}>
+                  {dashboard?.assignment ? (dashboard.assignment.vehicleName || `${dashboard.assignment.brand || ''} ${dashboard.assignment.model || ''}`.trim() || dashboard.assignment.registrationNumber) : 'No vehicle assigned.'}
+                </div>
+                {dashboard?.assignment && (
+                  <div style={{ color: '#3b82f6', marginTop: '6px', fontWeight: '700' }}>
+                    {dashboard.assignment.vehicleNumber || dashboard.assignment.registrationNumber}
                   </div>
-                ))}
+                )}
+                <div style={{ marginTop: '14px', color: '#94a3b8', fontSize: '13px' }}>
+                  {dashboard?.assignment ? `Tracker: ${dashboard.assignment.tracker || 'GPS Active'}` : 'No active assignment'}
+                </div>
               </div>
-            </div>
 
-            <div
-              id="pre-trip-checklist-form"
-              ref={(node) => {
-                sectionRefs.current['pre-trip-checklist-form'] = node;
-              }}
-              style={{
-                ...pageCardStyle,
-                gridColumn: '1 / -1',
-                scrollMarginTop: '90px',
-                border: activeSection === 'pre-trip-checklist-form' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'pre-trip-checklist-form'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
-              }}
-            >
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
-                <ClipboardCheck />
-                <h2 style={{ fontSize: '18px' }}>Pre-Trip Checklist</h2>
+              <div
+                id="dashboard-tasks"
+                ref={(node) => { sectionRefs.current['dashboard-tasks'] = node; }}
+                style={pageCardStyle}
+              >
+                <div style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px' }}>Today's Tasks</div>
+                <ul style={{ paddingLeft: '18px', color: '#f1f5f9', display: 'grid', gap: '6px', margin: 0, fontSize: '13px' }}>
+                  {todayTasks.map((task) => <li key={task}>{task}</li>)}
+                </ul>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
-                {Object.entries(checklist).map(([key, value]) => (
-                  <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#243244', padding: '12px', borderRadius: '10px' }}>
-                    <input type="checkbox" checked={value} onChange={() => handleChecklistChange(key)} />
-                    <span style={{ textTransform: 'capitalize' }}>{key}</span>
-                  </label>
-                ))}
-              </div>
-              <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <button type="button" onClick={handleChecklistSubmit} style={{ background: '#3B82F6', color: '#F8FAFC', border: 'none', borderRadius: '10px', padding: '12px 18px', fontWeight: 700, cursor: 'pointer' }}>Submit Checklist</button>
-                <button type="button" onClick={handleStartTrip} disabled={!checklistComplete} style={{ background: checklistComplete ? '#22C55E' : '#64748B', color: '#F8FAFC', border: 'none', borderRadius: '10px', padding: '12px 18px', fontWeight: 700, cursor: checklistComplete ? 'pointer' : 'not-allowed' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><PlayCircle size={16} /> Start Trip</span>
-                </button>
-              </div>
-              {checklistMessage && <div style={{ marginTop: '12px', color: checklistMessage.includes('success') ? '#22C55E' : '#FCA5A5' }}>{checklistMessage}</div>}
-            </div>
 
-            <div
-              id="assignment-history"
-              ref={(node) => {
-                sectionRefs.current['assignment-history'] = node;
-              }}
-              style={{
-                ...pageCardStyle,
-                gridColumn: '1 / -1',
-                scrollMarginTop: '90px',
-                border: activeSection === 'assignment-history' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'assignment-history'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
-              }}
-            >
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
-                <History />
-                <h2 style={{ fontSize: '18px' }}>Assignment History</h2>
+              <div
+                id="compliance-status"
+                ref={(node) => { sectionRefs.current['compliance-status'] = node; }}
+                style={pageCardStyle}
+              >
+                <div style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px' }}>Compliance Summary</div>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: complianceLabel === 'Expired' ? '#ef4444' : '#22c55e' }}>{complianceLabel}</div>
+                <div style={{ color: '#94a3b8', marginTop: '6px', fontSize: '13px' }}>Insurance due: {dashboard?.assignment?.insuranceExpiry ? new Date(dashboard.assignment.insuranceExpiry).toLocaleDateString() : 'N/A'}</div>
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse', color: '#F8FAFC' }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left', padding: '8px 0', color: '#94A3B8' }}>Vehicle</th>
-                    <th style={{ textAlign: 'left', padding: '8px 0', color: '#94A3B8' }}>Assigned Date</th>
-                    <th style={{ textAlign: 'left', padding: '8px 0', color: '#94A3B8' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {assignments.map((entry) => (
-                    <tr key={entry._id || entry.vehicleId}>
-                      <td style={{ padding: '10px 0' }}>{entry.vehicleNumber}</td>
-                      <td style={{ padding: '10px 0' }}>{new Date(entry.assignedDate).toLocaleDateString()}</td>
-                      <td style={{ padding: '10px 0' }}>{entry.status}</td>
-                    </tr>
+
+              <div
+                id="pre-trip-checklist"
+                ref={(node) => { sectionRefs.current['pre-trip-checklist'] = node; }}
+                style={pageCardStyle}
+              >
+                <div style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px' }}>Pending Checklist</div>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#f59e0b' }}>{dashboard?.pendingChecklistCount ?? 6}</div>
+                <div style={{ color: '#94a3b8', marginTop: '6px', fontSize: '13px' }}>Checklist status: {dashboard?.checklist?.status || 'Pending'}</div>
+              </div>
+
+              <div
+                id="notifications"
+                ref={(node) => { sectionRefs.current.notifications = node; }}
+                style={{ ...pageCardStyle, gridColumn: '1 / -1' }}
+              >
+                <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '14px' }}>Recent Notifications</div>
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {(dashboard?.notifications || []).map((item) => (
+                    <div key={item._id || item.id} style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '12px 14px' }}>
+                      <div style={{ fontWeight: 700, fontSize: '14px', color: '#f1f5f9' }}>{item.title}</div>
+                      <div style={{ color: '#94a3b8', marginTop: '4px', fontSize: '13px' }}>{item.message}</div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </div>
 
-            <div
-              id="report-issue"
-              ref={(node) => {
-                sectionRefs.current['report-issue'] = node;
-              }}
-              style={{
-                ...pageCardStyle,
-                scrollMarginTop: '90px',
-                border: activeSection === 'report-issue' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'report-issue'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
-              }}
-            >
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
-                <AlertTriangle />
-                <h2 style={{ fontSize: '18px' }}>Report Vehicle Issue</h2>
+              <div
+                id="pre-trip-checklist-form"
+                ref={(node) => { sectionRefs.current['pre-trip-checklist-form'] = node; }}
+                style={{ ...pageCardStyle, gridColumn: '1 / -1' }}
+              >
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
+                  <ClipboardCheck size={20} color="#3b82f6" />
+                  <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Pre-Trip Inspection Checklist</h2>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+                  {Object.entries(checklist).map(([key, value]) => (
+                    <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#0f172a', border: '1px solid #334155', padding: '10px 14px', borderRadius: '6px', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={value} onChange={() => handleChecklistChange(key)} />
+                      <span style={{ textTransform: 'capitalize', fontSize: '13px', color: '#f1f5f9' }}>{key}</span>
+                    </label>
+                  ))}
+                </div>
+                <div style={{ marginTop: '18px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={handleChecklistSubmit} style={{ backgroundColor: '#3b82f6', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Submit Checklist</button>
+                  <button type="button" onClick={handleStartTrip} disabled={!checklistComplete} style={{ backgroundColor: checklistComplete ? '#22c55e' : '#334155', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 18px', fontSize: '13px', fontWeight: 600, cursor: checklistComplete ? 'pointer' : 'not-allowed' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><PlayCircle size={15} /> Start Trip</span>
+                  </button>
+                </div>
+                {checklistMessage && <div style={{ marginTop: '12px', color: checklistMessage.includes('success') ? '#22c55e' : '#ef4444', fontSize: '13px' }}>{checklistMessage}</div>}
               </div>
-              <form onSubmit={handleIssueSubmit} style={{ display: 'grid', gap: '12px' }}>
-                <input value={issueForm.issueType} onChange={(e) => setIssueForm({ ...issueForm, issueType: e.target.value })} placeholder="Issue Type" style={{ background: '#0F172A', color: '#F8FAFC', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px' }} required />
-                <textarea value={issueForm.description} onChange={(e) => setIssueForm({ ...issueForm, description: e.target.value })} placeholder="Description" style={{ background: '#0F172A', color: '#F8FAFC', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px', minHeight: '110px' }} required />
-                <select value={issueForm.priority} onChange={(e) => setIssueForm({ ...issueForm, priority: e.target.value })} style={{ background: '#0F172A', color: '#F8FAFC', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px' }}>
-                  <option>Low</option>
-                  <option>Medium</option>
-                  <option>High</option>
-                </select>
-                <input type="date" value={issueForm.date} onChange={(e) => setIssueForm({ ...issueForm, date: e.target.value })} style={{ background: '#0F172A', color: '#F8FAFC', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px' }} required />
-                <button type="submit" style={{ background: '#EF4444', color: '#F8FAFC', border: 'none', borderRadius: '10px', padding: '12px 16px', fontWeight: 700, cursor: 'pointer' }}>Submit Report</button>
-              </form>
-              {issueMessage && <div style={{ marginTop: '12px', color: issueMessage.includes('success') ? '#22C55E' : '#FCA5A5' }}>{issueMessage}</div>}
-            </div>
 
-            <div
-              id="service-history"
-              ref={(node) => {
-                sectionRefs.current['service-history'] = node;
-              }}
-              style={{
-                ...pageCardStyle,
-                scrollMarginTop: '90px',
-                border: activeSection === 'service-history' ? '3px solid #3B82F6' : '1px solid rgba(255,255,255,0.06)',
-                boxShadow: activeSection === 'service-history'
-                  ? '0 0 0 1px rgba(59,130,246,0.35), 0 0 20px rgba(59,130,246,0.32)'
-                  : '0 10px 30px rgba(2, 6, 23, 0.38)',
-                transition: 'border 0.2s ease, box-shadow 0.2s ease',
-              }}
-            >
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
-                <Wrench />
-                <h2 style={{ fontSize: '18px' }}>Service History</h2>
+              <div
+                id="assignment-history"
+                ref={(node) => { sectionRefs.current['assignment-history'] = node; }}
+                style={{ ...pageCardStyle, gridColumn: '1 / -1' }}
+              >
+                <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '14px' }}>Assignment History</div>
+                <div style={{ overflowX: 'auto', border: '1px solid #334155', borderRadius: '6px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ backgroundColor: '#0f172a', color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #334155' }}>Vehicle Number</th>
+                        <th style={{ backgroundColor: '#0f172a', color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #334155' }}>Assigned By</th>
+                        <th style={{ backgroundColor: '#0f172a', color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #334155' }}>Assigned Date</th>
+                        <th style={{ backgroundColor: '#0f172a', color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #334155' }}>Released Date</th>
+                        <th style={{ backgroundColor: '#0f172a', color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #334155' }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(assignments || []).length === 0 ? (
+                        <tr>
+                          <td colSpan="5" style={{ padding: '18px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                            No assignment history recorded.
+                          </td>
+                        </tr>
+                      ) : (
+                        (assignments || []).map((entry) => (
+                          <tr key={entry._id || entry.vehicleId}>
+                            <td style={{ padding: '14px 16px', fontSize: '13px', color: '#f1f5f9', borderBottom: '1px solid #334155', fontWeight: 700 }}>
+                              {entry.registrationNumber || entry.vehicleNumber}
+                            </td>
+                            <td style={{ padding: '14px 16px', fontSize: '13px', color: '#f1f5f9', borderBottom: '1px solid #334155' }}>
+                              {entry.assignedBy || 'Fleet Manager'}
+                            </td>
+                            <td style={{ padding: '14px 16px', fontSize: '13px', color: '#f1f5f9', borderBottom: '1px solid #334155' }}>
+                              {entry.assignedDate ? new Date(entry.assignedDate).toLocaleDateString() : '-'}
+                            </td>
+                            <td style={{ padding: '14px 16px', fontSize: '13px', color: '#f1f5f9', borderBottom: '1px solid #334155' }}>
+                              {entry.unassignedDate || entry.returnDate ? new Date(entry.unassignedDate || entry.returnDate).toLocaleDateString() : 'In Operation'}
+                            </td>
+                            <td style={{ padding: '14px 16px', fontSize: '13px', color: '#f1f5f9', borderBottom: '1px solid #334155' }}>
+                              {entry.status}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div style={{ display: 'grid', gap: '10px' }}>
-                {serviceHistory.map((entry) => (
-                  <div key={entry._id || entry.performedDate} style={{ background: '#243244', borderRadius: '12px', padding: '12px' }}>
-                    <div style={{ fontWeight: 700 }}>{entry.serviceType}</div>
-                    <div style={{ color: '#94A3B8', marginTop: '4px' }}>{new Date(entry.performedDate).toLocaleDateString()} • {entry.status}</div>
-                  </div>
-                ))}
+
+              <div
+                id="report-issue"
+                ref={(node) => { sectionRefs.current['report-issue'] = node; }}
+                style={{ ...pageCardStyle, gridColumn: '1 / -1' }}
+              >
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
+                  <AlertTriangle size={20} color="#ef4444" />
+                  <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Report Vehicle Issue</h2>
+                </div>
+                <form onSubmit={handleIssueSubmit} style={{ display: 'grid', gap: '14px', maxWidth: '600px' }}>
+                  <input value={issueForm.issueType} onChange={(e) => setIssueForm({ ...issueForm, issueType: e.target.value })} placeholder="Issue Type (e.g. Engine Warning Light)" style={{ backgroundColor: '#0f172a', color: '#f1f5f9', border: '1px solid #334155', borderRadius: '6px', padding: '10px 14px', fontSize: '14px', outline: 'none' }} required />
+                  <textarea value={issueForm.description} onChange={(e) => setIssueForm({ ...issueForm, description: e.target.value })} placeholder="Detailed description of the issue" style={{ backgroundColor: '#0f172a', color: '#f1f5f9', border: '1px solid #334155', borderRadius: '6px', padding: '10px 14px', fontSize: '14px', minHeight: '110px', outline: 'none' }} required />
+                  <select value={issueForm.priority} onChange={(e) => setIssueForm({ ...issueForm, priority: e.target.value })} style={{ backgroundColor: '#0f172a', color: '#f1f5f9', border: '1px solid #334155', borderRadius: '6px', padding: '10px 14px', fontSize: '14px', outline: 'none' }}>
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                  </select>
+                  <button type="submit" style={{ backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', width: 'max-content' }}>Submit Report</button>
+                </form>
+                {issueMessage && <div style={{ marginTop: '12px', color: issueMessage.includes('success') ? '#22c55e' : '#ef4444', fontSize: '13px' }}>{issueMessage}</div>}
+              </div>
+
+              <div
+                id="service-history"
+                ref={(node) => { sectionRefs.current['service-history'] = node; }}
+                style={{ ...pageCardStyle, gridColumn: '1 / -1' }}
+              >
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
+                  <Wrench size={20} color="#3b82f6" />
+                  <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Service & Maintenance History</h2>
+                </div>
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {(serviceHistory || []).map((entry) => (
+                    <div key={entry._id || entry.performedDate} style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '12px 14px' }}>
+                      <div style={{ fontWeight: 700, fontSize: '14px', color: '#f1f5f9' }}>{entry.serviceType}</div>
+                      <div style={{ color: '#94a3b8', marginTop: '4px', fontSize: '13px' }}>{new Date(entry.performedDate).toLocaleDateString()} • {entry.status}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

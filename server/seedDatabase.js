@@ -6,40 +6,33 @@ require('dotenv').config({ path: path.join(__dirname, '../src/modules/FleetManag
 
 const connectDB = require('./config/db');
 
-// Models
-const Vehicle = require('../src/modules/Admin/backend/src/models/Vehicle');
-const User = require('../src/modules/Admin/backend/src/models/User');
-const Maintenance = require('../src/modules/Admin/backend/src/models/Maintenance');
-const Notification = require('../src/modules/Admin/backend/src/models/Notification');
-const OverrideLog = require('../src/modules/Admin/backend/src/models/OverrideLog');
-const Compliance = require('../src/modules/FleetManager/backend/models/Compliance');
-const Assignment = require('../src/modules/FleetManager/backend/models/Assignment');
-
-const ServiceQueue = require('../src/modules/ServiceCenter/server/models/ServiceQueue');
-const ServiceHistory = require('../src/modules/ServiceCenter/server/models/ServiceHistory');
-const ServiceCost = require('../src/modules/ServiceCenter/server/models/ServiceCost');
-const HistoricalRecord = require('../src/modules/ServiceCenter/server/models/HistoricalRecord');
-const ServiceLog = require('../src/modules/ServiceCenter/server/models/ServiceLog');
+// Unified Models
+const Vehicle = require('./models/Vehicle');
+const User = require('./models/User');
+const Compliance = require('./models/Compliance');
+const Assignment = require('./models/Assignment');
+const ServiceQueue = require('./models/ServiceQueue');
+const ServiceHistory = require('./models/ServiceHistory');
+const Notification = require('./models/Notification');
+const OverrideLog = require('./models/OverrideLog');
+const AuditLog = require('./models/AuditLog');
 
 async function seedDatabase() {
   try {
     await connectDB();
     console.log('[FleetGuard Seed] Starting database seeding...');
 
-    // Clear existing data
+    // Clear existing data across collections
     await Promise.all([
       Vehicle.deleteMany({}),
       User.deleteMany({}),
-      Maintenance.deleteMany({}),
-      Notification.deleteMany({}),
-      OverrideLog.deleteMany({}),
       Compliance.deleteMany({}),
       Assignment.deleteMany({}),
       ServiceQueue.deleteMany({}),
       ServiceHistory.deleteMany({}),
-      ServiceCost.deleteMany({}),
-      HistoricalRecord.deleteMany({}),
-      ServiceLog.deleteMany({})
+      Notification.deleteMany({}),
+      OverrideLog.deleteMany({}),
+      AuditLog.deleteMany({}),
     ]);
 
     // 1. Seed Vehicles
@@ -51,6 +44,7 @@ async function seedDatabase() {
         branch: 'Bangalore',
         manufacturingYear: 2022,
         mileage: 14200,
+        vin: 'MAH12345678901234',
         driverAssigned: 'Ravi Kumar',
         assignedDriver: 'Ravi Kumar',
         fleetManager: 'Anita Rao',
@@ -75,6 +69,7 @@ async function seedDatabase() {
         branch: 'Chennai',
         manufacturingYear: 2020,
         mileage: 28500,
+        vin: 'FOR98765432109876',
         driverAssigned: 'Suresh B',
         assignedDriver: 'Suresh B',
         fleetManager: 'Madhavan',
@@ -99,6 +94,7 @@ async function seedDatabase() {
         branch: 'Mumbai',
         manufacturingYear: 2021,
         mileage: 36400,
+        vin: 'HON45678901234567',
         driverAssigned: 'Pooja N',
         assignedDriver: 'Pooja N',
         fleetManager: 'Kiran Shah',
@@ -123,6 +119,7 @@ async function seedDatabase() {
         branch: 'Kochi',
         manufacturingYear: 2019,
         mileage: 43900,
+        vin: 'MAR23456789012345',
         driverAssigned: 'Arun Das',
         assignedDriver: 'Arun Das',
         fleetManager: 'Nisha Menon',
@@ -147,6 +144,7 @@ async function seedDatabase() {
         branch: 'Hyderabad',
         manufacturingYear: 2023,
         mileage: 15400,
+        vin: 'MAR99887766554433',
         driverAssigned: 'Neeraj',
         assignedDriver: 'Neeraj',
         fleetManager: 'Sajid Khan',
@@ -174,11 +172,11 @@ async function seedDatabase() {
     const usersData = [
       { name: 'Admin User', email: 'admin@fleetguard.com', password: hashedPassword, role: 'Admin', branch: 'Head Office', phone: '9000000001', status: 'Active' },
       { name: 'Anita Rao', email: 'anita@fleetguard.com', password: hashedPassword, role: 'Fleet Manager', branch: 'Bangalore', phone: '9000000002', status: 'Active' },
-      { name: 'Ravi Kumar', email: 'ravi@fleetguard.com', password: hashedPassword, role: 'Driver', branch: 'Bangalore', phone: '9000000005', status: 'Active' },
+      { name: 'Ravi Kumar', email: 'ravi@fleetguard.com', password: hashedPassword, role: 'Driver', branch: 'Bangalore', phone: '9000000005', licenseNumber: 'KA0120220001111', status: 'Active', assignedVehicle: 'KA01AB1234' },
       { name: 'SpeedFix Center', email: 'speedfix@fleetguard.com', password: hashedPassword, role: 'Service Center', branch: 'Bangalore', phone: '9000000017', status: 'Active' }
     ];
-    await User.insertMany(usersData);
-    console.log('[FleetGuard Seed] Created initial users.');
+    const insertedUsers = await User.insertMany(usersData);
+    console.log(`[FleetGuard Seed] Created ${insertedUsers.length} users.`);
 
     // 3. Seed Compliances & Assignments
     const compliancesData = [
@@ -211,6 +209,7 @@ async function seedDatabase() {
       {
         vehicleId: insertedVehicles[0]._id,
         registrationNumber: insertedVehicles[0].registrationNumber,
+        driverId: insertedUsers[2]._id,
         driverName: 'Ravi Kumar',
         assignedDate: new Date('2025-01-15'),
         status: 'Active',
@@ -219,9 +218,10 @@ async function seedDatabase() {
     ];
     await Assignment.insertMany(assignmentsData);
 
-    // 4. Seed Service Center Operations
+    // 4. Seed Service Operations
     const serviceQueueData = [
       {
+        vehicleId: insertedVehicles[2]._id,
         vehicleNumber: 'MH12XY4567',
         ownerBranch: 'Mumbai',
         vehicleModel: 'Honda City',
@@ -233,6 +233,7 @@ async function seedDatabase() {
         estimatedCost: 8500
       },
       {
+        vehicleId: insertedVehicles[1]._id,
         vehicleNumber: 'TN09CD7788',
         ownerBranch: 'Chennai',
         vehicleModel: 'Ford Ecosport',
@@ -248,14 +249,28 @@ async function seedDatabase() {
 
     const serviceHistoryData = [
       {
+        vehicleId: insertedVehicles[0]._id,
         vehicle: 'KA01AB1234',
+        vehicleNumber: 'KA01AB1234',
         mechanic: 'SpeedFix Mechanics',
+        technician: 'SpeedFix Mechanics',
         cost: 3500,
         status: 'Completed',
-        description: 'Replaced engine oil filter and topped up fluids'
+        description: 'Replaced engine oil filter and topped up fluids',
+        performedDate: new Date('2026-07-20')
       }
     ];
     await ServiceHistory.insertMany(serviceHistoryData);
+
+    // 5. Seed Audit Logs
+    const auditLogsData = [
+      { id: 'EVT-001', ts: new Date(), user: 'Anita Rao', userEmail: 'anita@fleetguard.com', role: 'Fleet Manager', action: 'Vehicle Registered', module: 'Vehicle Registry', status: 'Success', ip: '192.168.1.20', browser: 'Chrome 126', os: 'Windows 11', prev: 'N/A', next: 'KA01AB1234 added', reason: 'New vehicle onboarding' },
+      { id: 'EVT-002', ts: new Date(), user: 'Admin User', userEmail: 'admin@fleetguard.com', role: 'Admin', action: 'User Login', module: 'Authentication', status: 'Success', ip: '192.168.1.10', browser: 'Firefox 127', os: 'Ubuntu 22.04', prev: 'Logged out', next: 'Session started', reason: 'Routine login' },
+      { id: 'EVT-003', ts: new Date(), user: 'Ravi Kumar', userEmail: 'ravi@fleetguard.com', role: 'Driver', action: 'Assignment Override Attempt', module: 'Driver Assignment', status: 'Failed', ip: '192.168.1.55', browser: 'Safari 17', os: 'iOS 17', prev: 'Route A', next: 'Route B (blocked)', reason: 'Unauthorized override' },
+      { id: 'EVT-004', ts: new Date(), user: 'Anita Rao', userEmail: 'anita@fleetguard.com', role: 'Fleet Manager', action: 'Compliance Updated', module: 'Compliance', status: 'Success', ip: '192.168.1.20', browser: 'Chrome 126', os: 'Windows 11', prev: 'Expired', next: 'Valid till Oct 2026', reason: 'Annual renewal' },
+      { id: 'EVT-005', ts: new Date(), user: 'SpeedFix Center', userEmail: 'speedfix@fleetguard.com', role: 'Service Center', action: 'Service Logged', module: 'Maintenance', status: 'Success', ip: '192.168.1.88', browser: 'Edge 126', os: 'Windows 10', prev: 'Pending', next: 'Completed', reason: 'Scheduled service' }
+    ];
+    await AuditLog.insertMany(auditLogsData);
 
     console.log('[FleetGuard Seed] ✅ Database successfully seeded with rich initial data!');
     process.exit(0);

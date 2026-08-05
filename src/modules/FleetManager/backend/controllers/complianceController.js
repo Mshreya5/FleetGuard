@@ -16,7 +16,14 @@ const uploadDocument = async (req, res) => {
             return res.status(400).json({ message: "Vehicle, document type, issue date, and expiry date are required" });
         }
 
-        const vehicle = await Vehicle.findById(vehicleId).catch(() => null);
+        let vehicle = null;
+        if (mongoose.Types.ObjectId.isValid(vehicleId)) {
+            vehicle = await Vehicle.findById(vehicleId).catch(() => null);
+        }
+        if (!vehicle) {
+            vehicle = await Vehicle.findOne({ registrationNumber: String(vehicleId).toUpperCase().trim() }).catch(() => null);
+        }
+
         if (!vehicle) {
             return res.status(404).json({ message: "Vehicle not found" });
         }
@@ -32,24 +39,52 @@ const uploadDocument = async (req, res) => {
             status = "Expiring Soon";
         }
 
+        const fs = require('fs');
+        let base64Data = '';
+        if (req.file.buffer) {
+            base64Data = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        } else if (req.file.path && fs.existsSync(req.file.path)) {
+            try {
+                const fileBuffer = fs.readFileSync(req.file.path);
+                base64Data = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
+            } catch (e) {
+                // Fallback
+            }
+        }
+
+        const filename = req.file.filename || req.file.originalname || `document-${Date.now()}`;
+        const finalFilePath = base64Data || `/uploads/${filename}`;
+
         // Replace existing document of same type if present
-        let doc = await Compliance.findOne({ vehicleId, documentType }).catch(() => null);
+        let doc = await Compliance.findOne({
+            $or: [
+                { vehicleId: vehicle._id, documentType },
+                { registrationNumber: vehicle.registrationNumber, documentType }
+            ]
+        }).catch(() => null);
+
         if (doc) {
-            doc.filename = req.file.filename;
+            doc.vehicleId = vehicle._id;
+            doc.registrationNumber = vehicle.registrationNumber;
+            doc.filename = filename;
             doc.originalName = req.file.originalname;
-            doc.filePath = `/uploads/${req.file.filename}`;
+            doc.filePath = finalFilePath;
+            doc.fileData = base64Data;
+            doc.mimeType = req.file.mimetype;
             doc.issueDate = issueDate;
             doc.expiryDate = expiryDate;
             doc.status = status;
             await doc.save();
         } else {
             doc = new Compliance({
-                vehicleId,
+                vehicleId: vehicle._id,
                 registrationNumber: vehicle.registrationNumber,
                 documentType,
-                filename: req.file.filename,
+                filename: filename,
                 originalName: req.file.originalname,
-                filePath: `/uploads/${req.file.filename}`,
+                filePath: finalFilePath,
+                fileData: base64Data,
+                mimeType: req.file.mimetype,
                 issueDate,
                 expiryDate,
                 status
@@ -59,6 +94,27 @@ const uploadDocument = async (req, res) => {
 
         // Update vehicle overall compliance summary
         await recalculateComplianceStatus(vehicle._id);
+
+        try {
+            const Notification = require("../models/Notification");
+            const AuditLog = require("../../../../server/models/AuditLog");
+            await Notification.create({
+                title: "Compliance Document Uploaded",
+                message: `${documentType} uploaded for vehicle ${vehicle.registrationNumber}`,
+                type: "Compliance",
+                vehicleId: vehicle._id,
+                role: "Fleet Manager"
+            });
+            await AuditLog.create({
+                action: "COMPLIANCE_UPLOAD",
+                entity: "Compliance",
+                entityId: doc._id,
+                description: `Uploaded ${documentType} for vehicle ${vehicle.registrationNumber} (Expiry: ${expiryDate})`,
+                performedBy: req.user?.name || "Fleet Manager"
+            });
+        } catch (e) {
+            // Non-blocking notification/audit logging
+        }
 
         res.status(200).json({
             message: `${documentType} uploaded successfully`,

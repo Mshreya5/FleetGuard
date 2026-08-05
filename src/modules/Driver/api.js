@@ -2,6 +2,14 @@ import axios from 'axios';
 
 const API_BASE = '/api/driver';
 
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const fetchDriverDashboard = () => axios.get(`${API_BASE}/dashboard`);
 export const fetchNotifications = () => axios.get(`${API_BASE}/notifications`);
 export const fetchAssignments = () => axios.get(`${API_BASE}/assignments`);

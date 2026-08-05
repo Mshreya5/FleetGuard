@@ -17,7 +17,8 @@ const AssignVehiclePage = ({ showToast }) => {
             setAvailableVehicles(vData.vehicles || []);
 
             const aData = await getAssignments();
-            setAssignments(aData || []);
+            const assignmentList = Array.isArray(aData) ? aData : (aData?.assignments || aData?.history || []);
+            setAssignments(assignmentList);
         } catch (err) {
             showToast(err.message || 'Failed to load assignment data', 'danger');
         } finally {

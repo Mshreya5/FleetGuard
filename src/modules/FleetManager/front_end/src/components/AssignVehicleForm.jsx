@@ -9,6 +9,9 @@ const AssignVehicleForm = ({ availableVehicles = [], onAssignSuccess, showToast 
     const [notes, setNotes] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [overrideReason, setOverrideReason] = useState('');
+    const [requiresOverride, setRequiresOverride] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!vehicleId) {
@@ -26,14 +29,20 @@ const AssignVehicleForm = ({ availableVehicles = [], onAssignSuccess, showToast 
                 vehicleId,
                 driverName: driverName.trim(),
                 assignedDate,
-                notes
+                notes,
+                overrideReason: overrideReason.trim()
             });
             showToast(res.message || 'Vehicle assigned successfully in MongoDB', 'success');
             setVehicleId('');
             setDriverName('');
             setNotes('');
+            setOverrideReason('');
+            setRequiresOverride(false);
             if (onAssignSuccess) onAssignSuccess();
         } catch (err) {
+            if (err.message && err.message.includes('Override Reason')) {
+                setRequiresOverride(true);
+            }
             showToast(err.message || 'Failed to assign vehicle', 'danger');
         } finally {
             setIsSubmitting(false);
@@ -54,7 +63,10 @@ const AssignVehicleForm = ({ availableVehicles = [], onAssignSuccess, showToast 
                         <label style={COMMON_STYLES.label}>Available Vehicle *</label>
                         <select
                             value={vehicleId}
-                            onChange={(e) => setVehicleId(e.target.value)}
+                            onChange={(e) => {
+                                setVehicleId(e.target.value);
+                                setRequiresOverride(false);
+                            }}
                             style={COMMON_STYLES.select}
                         >
                             <option value="">-- Select Available Vehicle --</option>
@@ -99,13 +111,33 @@ const AssignVehicleForm = ({ availableVehicles = [], onAssignSuccess, showToast 
                 <div>
                     <label style={COMMON_STYLES.label}>Assignment Notes / Route Details</label>
                     <textarea
-                        rows="3"
+                        rows="2"
                         placeholder="Specify route, destination, or assignment instructions..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         style={{ ...COMMON_STYLES.input, resize: 'vertical' }}
                     />
                 </div>
+
+                {/* Override Reason Field (When Required for Non-Compliant Vehicles) */}
+                {(requiresOverride || overrideReason.length > 0) && (
+                    <div style={{ padding: '14px', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px' }}>
+                        <label style={{ ...COMMON_STYLES.label, color: '#f87171' }}>
+                            Compliance Override Reason *
+                        </label>
+                        <textarea
+                            rows="2"
+                            placeholder="Enter reason for assigning non-compliant vehicle (e.g. Emergency route, PUC renewal in progress)..."
+                            value={overrideReason}
+                            onChange={(e) => setOverrideReason(e.target.value)}
+                            style={{ ...COMMON_STYLES.input, borderColor: '#ef4444' }}
+                            required
+                        />
+                        <span style={{ fontSize: '11px', color: '#f87171', marginTop: '4px', display: 'block' }}>
+                            Required: This vehicle has expired compliance documents. Providing a reason will log an official Override in MongoDB.
+                        </span>
+                    </div>
+                )}
 
                 {/* Action Row */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '12px', borderTop: `1px solid ${COLORS.border}` }}>
@@ -117,7 +149,7 @@ const AssignVehicleForm = ({ availableVehicles = [], onAssignSuccess, showToast 
                             opacity: (isSubmitting || availableVehicles.length === 0) ? 0.6 : 1
                         }}
                     >
-                        {isSubmitting ? 'Assigning Vehicle...' : 'Confirm Assignment'}
+                        {isSubmitting ? 'Assigning Vehicle...' : (requiresOverride || overrideReason ? 'Override & Confirm Assignment' : 'Confirm Assignment')}
                     </button>
                 </div>
             </form>

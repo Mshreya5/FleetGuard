@@ -12,11 +12,13 @@ export default function ServiceHistoryPage() {
 
   const fetchHistory = async (activePage = page) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/service-center/extensions/history', {
+      const response = await axios.get('/api/service-center/extensions/history', {
         params: { search, status, page: activePage, limit },
       });
-      setRecords(response.data.records);
-      setTotal(response.data.total);
+      const data = response.data;
+      const items = Array.isArray(data) ? data : (data?.records || []);
+      setRecords(items);
+      setTotal(data?.total || items.length || 0);
     } catch (error) {
       console.error('Unable to fetch service history', error);
     }
@@ -27,7 +29,8 @@ export default function ServiceHistoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filteredCount = useMemo(() => Math.ceil(total / limit), [total]);
+  const safeRecords = Array.isArray(records) ? records : [];
+  const filteredCount = useMemo(() => Math.ceil(total / limit) || 1, [total]);
 
   const handleSearch = (event) => {
     setSearch(event.target.value);
@@ -75,22 +78,30 @@ export default function ServiceHistoryPage() {
               </tr>
             </thead>
             <tbody>
-              {records.map((record) => (
-                <tr key={record._id}>
-                  <td>{new Date(record.date).toLocaleDateString()}</td>
-                  <td>{record.vehicle}</td>
-                  <td>{record.mechanic}</td>
-                  <td>${Number(record.cost || 0).toFixed(2)}</td>
-                  <td><span className={`${styles.badge} ${styles[`status${record.status.replace(/\s+/g, '')}`] || ''}`}>{record.status}</span></td>
+              {safeRecords.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', color: '#94a3b8', padding: '24px' }}>
+                    No service history records found matching your filters.
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                safeRecords.map((record) => (
+                  <tr key={record._id}>
+                    <td>{new Date(record.date || record.createdAt).toLocaleDateString()}</td>
+                    <td>{record.vehicle || record.vehicleNumber}</td>
+                    <td>{record.mechanic || record.technician || 'Service Tech'}</td>
+                    <td>₹{Number(record.cost || 0).toLocaleString()}</td>
+                    <td><span className={`${styles.badge} ${styles.statusCompleted}`}>{record.status || 'Completed'}</span></td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         <div className={styles.formActions} style={{ justifyContent: 'space-between', marginTop: '12px' }}>
           <button className={styles.secondaryButton} disabled={page === 1} onClick={() => { const nextPage = page - 1; setPage(nextPage); fetchHistory(nextPage); }}>Previous</button>
-          <span className={styles.sectionSubtitle}>Page {page} of {Math.max(filteredCount, 1)}</span>
+          <span className={styles.sectionSubtitle}>Page {page} of {filteredCount}</span>
           <button className={styles.secondaryButton} disabled={page >= filteredCount} onClick={() => { const nextPage = page + 1; setPage(nextPage); fetchHistory(nextPage); }}>Next</button>
         </div>
       </section>

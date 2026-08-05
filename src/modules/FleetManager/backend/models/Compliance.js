@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const complianceSchema = new mongoose.Schema(
     {
         vehicleId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Vehicle",
+            type: mongoose.Schema.Types.Mixed,
             required: true
         },
         registrationNumber: {
@@ -13,7 +12,6 @@ const complianceSchema = new mongoose.Schema(
         },
         documentType: {
             type: String,
-            enum: ["Insurance", "Pollution Certificate", "Fitness Certificate", "RC"],
             required: true
         },
         filename: {
@@ -27,6 +25,14 @@ const complianceSchema = new mongoose.Schema(
         filePath: {
             type: String,
             required: true
+        },
+        fileData: {
+            type: String,
+            default: ""
+        },
+        mimeType: {
+            type: String,
+            default: ""
         },
         issueDate: {
             type: Date,
