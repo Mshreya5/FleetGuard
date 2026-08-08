@@ -1,45 +1,104 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { INITIAL_NOTIFICATIONS, genId, ACTION_TEMPLATES } from '../data/notificationData';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const NotificationContext = createContext(null);
 
 export function NotificationProvider({ children }) {
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch('/api/notifications?limit=100', { headers });
+      const data = await res.json();
 
-  const markRead = useCallback((id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      if (data.success && Array.isArray(data.notifications)) {
+        setNotifications(data.notifications);
+        setUnreadCount(typeof data.unreadCount === 'number' ? data.unreadCount : 0);
+      }
+    } catch (err) {
+      console.warn('[NotificationContext] Fetch warning:', err.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const markAllRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  }, []);
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 5000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
-  const deleteOne = useCallback((id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
+  const markRead = useCallback(async (id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id || n._id === id ? { ...n, read: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
 
-  const clearAll = useCallback(() => setNotifications([]), []);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+      await fetch(`/api/notifications/${id}/read`, { method: 'PATCH', headers });
+      fetchNotifications();
+    } catch (err) {
+      console.warn('[NotificationContext] markRead warning:', err.message);
+    }
+  }, [fetchNotifications]);
 
-  const addFromAction = useCallback((actionType, meta = '') => {
-    const template = ACTION_TEMPLATES[actionType];
-    if (!template) return;
-    const { title, category, priority } = template(meta);
-    const newNotif = {
-      id: genId(),
-      title,
-      category,
-      priority,
-      time: 'Just now',
-      read: false,
-      detail: `Auto-generated from action: ${actionType}. ${meta}`,
-    };
-    setNotifications(prev => [newNotif, ...prev]);
-  }, []);
+  const markAllRead = useCallback(async () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+      await fetch('/api/notifications/mark-all-read', { method: 'POST', headers });
+      fetchNotifications();
+    } catch (err) {
+      console.warn('[NotificationContext] markAllRead warning:', err.message);
+    }
+  }, [fetchNotifications]);
+
+  const deleteOne = useCallback(async (id) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id && n._id !== id));
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+      await fetch(`/api/notifications/${id}/read`, { method: 'PATCH', headers });
+      fetchNotifications();
+    } catch (err) {
+      console.warn('[NotificationContext] deleteOne warning:', err.message);
+    }
+  }, [fetchNotifications]);
+
+  const clearAll = useCallback(async () => {
+    setNotifications((prev) => prev.filter((n) => !n.read));
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+      await fetch('/api/notifications/clear', { method: 'DELETE', headers });
+      fetchNotifications();
+    } catch (err) {
+      console.warn('[NotificationContext] clearAll warning:', err.message);
+    }
+  }, [fetchNotifications]);
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markRead, markAllRead, deleteOne, clearAll, addFromAction }}>
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        unreadCount,
+        loading,
+        fetchNotifications,
+        markRead,
+        markAllRead,
+        deleteOne,
+        clearAll,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );

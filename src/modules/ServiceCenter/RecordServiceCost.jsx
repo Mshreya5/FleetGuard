@@ -35,7 +35,9 @@ export default function RecordServiceCost() {
   const fetchRecords = async () => {
     try {
       const response = await axios.get('/api/service-center/extensions/costs');
-      setRecords(response.data);
+      const data = response.data;
+      const items = Array.isArray(data) ? data : (data?.costs || data?.records || []);
+      setRecords(items);
     } catch (error) {
       console.error('Unable to fetch service costs', error);
     }
@@ -50,7 +52,7 @@ export default function RecordServiceCost() {
     if (!validate()) return;
 
     try {
-      await axios.post('http://localhost:5000/api/service-center/extensions/costs', {
+      await axios.post('/api/service-center/extensions/costs', {
         ...formValues,
         labourCost: Number(formValues.labourCost),
         sparePartsCost: Number(formValues.sparePartsCost || 0),
@@ -63,6 +65,8 @@ export default function RecordServiceCost() {
       setStatus(error.response?.data?.message || 'Unable to save service cost.');
     }
   };
+
+  const safeRecords = Array.isArray(records) ? records : [];
 
   return (
     <>
@@ -113,33 +117,35 @@ export default function RecordServiceCost() {
           </form>
         </section>
 
-        {records.length > 0 && (
-          <section className={styles.cardSection}>
-            <div className={styles.sectionHeading}>
-              <h3>Saved Cost Records</h3>
+        {safeRecords.length > 0 && (
+          <section className={styles.tableCard} style={{ flex: 1 }}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>Saved Cost Records</h3>
             </div>
-            <table className={styles.serviceTable}>
-              <thead>
-                <tr>
-                  <th>Vehicle</th>
-                  <th>Labour Cost</th>
-                  <th>Spare Parts</th>
-                  <th>Total Cost</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((r, i) => (
-                  <tr key={r._id || i}>
-                    <td>{r.vehicle}</td>
-                    <td>₹{r.labourCost}</td>
-                    <td>₹{r.sparePartsCost}</td>
-                    <td>₹{r.totalCost}</td>
-                    <td>{r.description || 'N/A'}</td>
+            <div className={styles.tableWrap}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Labour Cost</th>
+                    <th>Spare Parts</th>
+                    <th>Total Cost</th>
+                    <th>Description</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {safeRecords.map((r, i) => (
+                    <tr key={r._id || i}>
+                      <td>{r.vehicle}</td>
+                      <td>₹{r.labourCost}</td>
+                      <td>₹{r.sparePartsCost}</td>
+                      <td>₹{r.totalCost}</td>
+                      <td>{r.description || 'N/A'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         )}
       </div>

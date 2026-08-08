@@ -121,12 +121,14 @@ export const FleetManagerProvider = ({ children }) => {
   const addVehicle = async (newVehicleData) => {
     setLoading(true);
     try {
-      const created = await vehicleService.createVehicle(newVehicleData);
+      const res = await vehicleService.createVehicle(newVehicleData);
+      const created = res.vehicle || res;
       await loadData();
       showToast(`Vehicle ${newVehicleData.registrationNumber} registered successfully!`);
       return created;
     } catch (err) {
       showToast(`Failed to add vehicle: ${err.message}`);
+      throw err;
     } finally {
       setLoading(false);
     }

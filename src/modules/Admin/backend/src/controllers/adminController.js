@@ -114,11 +114,9 @@ const getDashboardData = async (req, res) => {
       vehicle.status === 'Under Service'
     ).length;
     
-    const upcomingExpiries = buildExpiryData(vehicles).filter((item) => item.daysRemaining <= 15).length;
-    const notifications = [
-      ...vehicles.slice(0, 3).map((vehicle) => `${vehicle.registrationNumber} requires attention for compliance review.`),
-      `Fleet maintenance has ${vehiclesUnderMaintenance} active vehicles pending review.`,
-    ];
+    const Notification = mongoose.models.Notification || require('../models/Notification');
+    const realNotifications = await Notification.find({}).sort({ createdAt: -1 }).limit(5).lean().catch(() => []);
+    const notifications = realNotifications.map((n) => n.message || n.description || n.title);
 
     return res.status(200).json({
       summary: {

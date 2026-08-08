@@ -101,7 +101,7 @@
 .al-topbar {
   position: fixed;
   top: 0;
-  left: 240px;
+  left: 0;
   right: 0;
   height: 64px;
   background: rgba(15,23,42,0.92);
@@ -177,7 +177,7 @@
 
 /* ── Main Content ───────────────────────────────────── */
 .al-main {
-  margin-left: 240px;
+  margin-left: 0;
   margin-top: 64px;
   flex: 1;
   padding: 28px;

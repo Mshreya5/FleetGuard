@@ -1,5 +1,14 @@
 const API_BASE_URL = "/api";
 
+const getAuthHeaders = (extraHeaders = {}) => {
+    const token = localStorage.getItem("token");
+    const headers = { ...extraHeaders };
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+    return headers;
+};
+
 const handleResponse = async (response) => {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -11,10 +20,9 @@ const handleResponse = async (response) => {
 // Dashboard Summary API
 export const getDashboardSummary = async () => {
     try {
-        const res = await fetch(`${API_BASE_URL}/dashboard/summary`);
+        const res = await fetch(`${API_BASE_URL}/dashboard/summary`, { headers: getAuthHeaders() });
         return await handleResponse(res);
     } catch (err) {
-        console.warn('Dashboard fetch error:', err.message);
         return {
             cards: {
                 totalVehicles: 0,
@@ -33,13 +41,12 @@ export const getDashboardSummary = async () => {
 };
 
 // Vehicles APIs
-export const getVehicles = async ({ search = "", status = "All", page = 1, limit = 10 } = {}) => {
+export const getVehicles = async ({ search = "", status = "All", page = 1, limit = 100 } = {}) => {
     try {
         const params = new URLSearchParams({ search, status, page, limit });
-        const res = await fetch(`${API_BASE_URL}/vehicles?${params.toString()}`);
+        const res = await fetch(`${API_BASE_URL}/vehicles?${params.toString()}`, { headers: getAuthHeaders() });
         return await handleResponse(res);
     } catch (err) {
-        console.warn('Vehicles fetch error:', err.message);
         return {
             vehicles: [],
             total: 0,
@@ -51,10 +58,9 @@ export const getVehicles = async ({ search = "", status = "All", page = 1, limit
 
 export const getVehicleById = async (id) => {
     try {
-        const res = await fetch(`${API_BASE_URL}/vehicles/${id}`);
+        const res = await fetch(`${API_BASE_URL}/vehicles/${id}`, { headers: getAuthHeaders() });
         return await handleResponse(res);
     } catch (err) {
-        console.warn('Vehicle detail fetch error:', err.message);
         return null;
     }
 };
@@ -62,7 +68,7 @@ export const getVehicleById = async (id) => {
 export const createVehicle = async (vehicleData) => {
     const res = await fetch(`${API_BASE_URL}/vehicles`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(vehicleData)
     });
     return await handleResponse(res);
@@ -71,7 +77,7 @@ export const createVehicle = async (vehicleData) => {
 export const updateVehicle = async (id, vehicleData) => {
     const res = await fetch(`${API_BASE_URL}/vehicles/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(vehicleData)
     });
     return await handleResponse(res);
@@ -79,7 +85,8 @@ export const updateVehicle = async (id, vehicleData) => {
 
 export const deleteVehicle = async (id) => {
     const res = await fetch(`${API_BASE_URL}/vehicles/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: getAuthHeaders()
     });
     return await handleResponse(res);
 };
@@ -88,7 +95,7 @@ export const deleteVehicle = async (id) => {
 export const assignVehicleToDriver = async (data) => {
     const res = await fetch(`${API_BASE_URL}/assignments/assign`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(data)
     });
     return await handleResponse(res);
@@ -97,7 +104,7 @@ export const assignVehicleToDriver = async (data) => {
 export const unassignVehicle = async (data) => {
     const res = await fetch(`${API_BASE_URL}/assignments/unassign`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(data)
     });
     return await handleResponse(res);
@@ -105,10 +112,11 @@ export const unassignVehicle = async (data) => {
 
 export const getAssignmentHistory = async () => {
     try {
-        const res = await fetch(`${API_BASE_URL}/assignments`);
-        return await handleResponse(res);
+        const res = await fetch(`${API_BASE_URL}/assignments`, { headers: getAuthHeaders() });
+        const data = await handleResponse(res);
+        if (Array.isArray(data)) return data;
+        return data.assignments || data.history || [];
     } catch (err) {
-        console.warn('Assignment history fetch error:', err.message);
         return [];
     }
 };
@@ -119,10 +127,9 @@ export const getAssignments = getAssignmentHistory;
 // Compliance APIs
 export const getComplianceStatus = async () => {
     try {
-        const res = await fetch(`${API_BASE_URL}/compliance/status`);
+        const res = await fetch(`${API_BASE_URL}/compliance/status`, { headers: getAuthHeaders() });
         return await handleResponse(res);
     } catch (err) {
-        console.warn('Compliance status fetch error:', err.message);
         return {
             summary: { totalDocuments: 0, valid: 0, expiringSoon: 0, expired: 0 },
             documents: [],
@@ -134,6 +141,7 @@ export const getComplianceStatus = async () => {
 export const uploadComplianceDocument = async (formData) => {
     const res = await fetch(`${API_BASE_URL}/compliance/upload`, {
         method: "POST",
+        headers: getAuthHeaders(),
         body: formData
     });
     return await handleResponse(res);
@@ -141,10 +149,9 @@ export const uploadComplianceDocument = async (formData) => {
 
 export const getUpcomingExpiries = async (days = 30) => {
     try {
-        const res = await fetch(`${API_BASE_URL}/compliance/upcoming-expiry?days=${days}`);
+        const res = await fetch(`${API_BASE_URL}/compliance/upcoming-expiry?days=${days}`, { headers: getAuthHeaders() });
         return await handleResponse(res);
     } catch (err) {
-        console.warn('Upcoming expiries fetch error:', err.message);
         return { filterDays: days, totalCount: 0, expirations: [] };
     }
 };

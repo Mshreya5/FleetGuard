@@ -14,7 +14,7 @@ export default function MaintenanceRiskLevel() {
     }
 
     try {
-      const response = await axios.get('http://localhost:5000/api/service-center/extensions/risk', {
+      const response = await axios.get('/api/service-center/extensions/risk', {
         params: { mileage },
       });
       setRisk(response.data);
@@ -42,7 +42,7 @@ export default function MaintenanceRiskLevel() {
       <section className={styles.formCard}>
         <label className={styles.field}>
           <span>Current Mileage</span>
-          <input type="number" value={mileage} onChange={(event) => setMileage(event.target.value)} placeholder="Enter mileage" />
+          <input type="number" value={mileage} onChange={(event) => setMileage(event.target.value)} placeholder="Enter mileage (e.g. 50000)" />
         </label>
 
         {error && <p className={styles.errorText}>{error}</p>}
@@ -51,7 +51,7 @@ export default function MaintenanceRiskLevel() {
           <div className={styles.submissionList}>
             <article className={styles.submissionItem}>
               <strong>Risk Level</strong>
-              <span className={`${styles.badge} ${styles[risk.color] || ''}`}>{risk.level}</span>
+              <span className={`${styles.badge} ${styles[risk.color] || styles.priorityMedium}`}>{risk.level}</span>
             </article>
             <article className={styles.submissionItem}>
               <strong>Explanation</strong>

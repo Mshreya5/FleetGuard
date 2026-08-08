@@ -78,7 +78,7 @@ const VehicleTable = ({
                                             <StatusBadge status={v.status} />
                                         </td>
                                         <td style={COMMON_STYLES.tableCell}>
-                                            <StatusBadge status={v.complianceSummary?.overallStatus || 'Expired'} />
+                                            <StatusBadge status={v.complianceSummary?.overallStatus || v.complianceStatus || 'Valid'} />
                                         </td>
                                         <td style={{ ...COMMON_STYLES.tableCell, textAlign: 'right' }}>
                                             <div style={{ display: 'inline-flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>

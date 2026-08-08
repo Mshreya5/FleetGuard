@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { COLORS, COMMON_STYLES } from '../utils/styles';
-import { createVehicle } from '../services/api';
+import { useFleetManager } from '../context/FleetManagerContext';
 
 const FUEL_TYPES = ["Diesel", "Petrol", "Electric", "Hybrid", "CNG"];
 const VEHICLE_TYPES = ["Truck", "Van", "Sedan", "SUV", "Bus", "Trailer"];
 const BRANCHES = ["North Hub", "South Terminal", "East Depot", "West Station", "Central HQ"];
 
 const VehicleRegistrationForm = ({ onSuccess, showToast }) => {
+    const { addVehicle, loadData } = useFleetManager();
     const initialFormState = {
         registrationNumber: '',
         model: '',
@@ -68,18 +69,19 @@ const VehicleRegistrationForm = ({ onSuccess, showToast }) => {
 
         setIsSubmitting(true);
         try {
-            await createVehicle({
+            await addVehicle({
                 ...formData,
                 registrationNumber: formData.registrationNumber.trim().toUpperCase(),
                 manufacturingYear: Number(formData.manufacturingYear),
                 mileage: Number(formData.mileage)
             });
 
-            showToast('Vehicle registered successfully in MongoDB', 'success');
+            await loadData();
+            if (showToast) showToast('Vehicle registered successfully in MongoDB', 'success');
             handleReset();
             if (onSuccess) onSuccess();
         } catch (err) {
-            showToast(err.message || 'Failed to register vehicle', 'danger');
+            if (showToast) showToast(err.message || 'Failed to register vehicle', 'danger');
         } finally {
             setIsSubmitting(false);
         }

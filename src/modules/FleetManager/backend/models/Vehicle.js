@@ -93,6 +93,10 @@ const vehicleSchema = new mongoose.Schema(
       rcExpiry: { type: Date, default: null },
       overallStatus: { type: String, default: 'Valid' },
     },
+    complianceStatus: {
+      type: String,
+      default: 'Valid',
+    },
   },
   {
     timestamps: true,
