@@ -51,7 +51,11 @@ const registerUser = async (req, res) => {
     }
 
     // Unique Email Check
+<<<<<<< HEAD
+    const existingEmail = await User.findOne({ email: cleanEmail }).maxTimeMS(30000);
+=======
     const existingEmail = await User.findOne({ email: cleanEmail });
+>>>>>>> origin/dev
     if (existingEmail) {
       return res.status(409).json({ success: false, message: 'An account with this email address already exists. Please login instead.' });
     }
@@ -96,7 +100,13 @@ const loginUser = async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+<<<<<<< HEAD
+    
+    // Add timeout to the query
+    const user = await User.findOne({ email: cleanEmail }).maxTimeMS(30000);
+=======
     const user = await User.findOne({ email: cleanEmail });
+>>>>>>> origin/dev
 
     if (!user) {
       await logAudit({
@@ -590,6 +600,35 @@ const changePassword = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
+// COUNT TOTAL DRIVERS
+const getDriverCount = async (req, res) => {
+  try {
+    const count = await User.countDocuments({ role: 'Driver', status: 'Active' });
+    res.status(200).json({
+      success: true,
+      totalDrivers: count,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message, totalDrivers: 0 });
+  }
+};
+
+// COUNT TOTAL FLEET MANAGERS
+const getFleetManagerCount = async (req, res) => {
+  try {
+    const count = await User.countDocuments({ role: 'Fleet Manager', status: 'Active' });
+    res.status(200).json({
+      success: true,
+      fleetManagers: count,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message, fleetManagers: 0 });
+  }
+};
+
+=======
+>>>>>>> origin/dev
 module.exports = {
   registerUser,
   loginUser,
@@ -601,4 +640,9 @@ module.exports = {
   deleteUser,
   updateUserStatus,
   changePassword,
+<<<<<<< HEAD
+  getDriverCount,
+  getFleetManagerCount,
+=======
+>>>>>>> origin/dev
 };

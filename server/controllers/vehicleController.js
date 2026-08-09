@@ -364,6 +364,38 @@ const deleteVehicle = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
+// COUNT TOTAL VEHICLES
+const getVehicleCount = async (req, res) => {
+  try {
+    const count = await Vehicle.countDocuments({});
+    res.status(200).json({
+      success: true,
+      totalVehicles: count,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message, totalVehicles: 0 });
+  }
+};
+
+// COUNT VEHICLES UNDER MAINTENANCE
+const getMaintenanceCount = async (req, res) => {
+  try {
+    const ServiceQueue = require('../models/ServiceQueue');
+    const count = await ServiceQueue.countDocuments({
+      status: { $in: ['Waiting', 'In Progress'] }
+    });
+    res.status(200).json({
+      success: true,
+      vehiclesUnderMaintenance: count,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message, vehiclesUnderMaintenance: 0 });
+  }
+};
+
+=======
+>>>>>>> origin/dev
 module.exports = {
   getVehicles,
   getVehicle,
@@ -371,4 +403,9 @@ module.exports = {
   updateVehicle,
   deleteVehicle,
   recalculateComplianceStatus,
+<<<<<<< HEAD
+  getVehicleCount,
+  getMaintenanceCount,
+=======
+>>>>>>> origin/dev
 };
