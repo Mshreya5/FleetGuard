@@ -31,8 +31,8 @@ export default function QueueTable({ vehicles }) {
         .join(' ')
         .toLowerCase()
         .includes(search.toLowerCase());
-      const matchesPriority = priority === 'All' || item.priority === priority;
-      const matchesStatus = status === 'All' || item.status === status;
+      const matchesPriority = priority === 'All' || (item.priority && item.priority.toString().toLowerCase() === priority.toLowerCase());
+      const matchesStatus = status === 'All' || (item.status && item.status.toString().toLowerCase() === status.toLowerCase());
 
       return matchesSearch && matchesPriority && matchesStatus;
     });
