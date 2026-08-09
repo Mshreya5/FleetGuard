@@ -4,32 +4,137 @@ const IssueReport = require('../models/IssueReport');
 const Notification = require('../models/Notification');
 const TripStatus = require('../models/TripStatus');
 const ServiceHistory = require('../models/ServiceHistory');
+const ServiceQueue = require('../models/ServiceQueue');
+const Vehicle = require('../models/Vehicle');
+const User = require('../models/User');
+const { recalculateComplianceStatus } = require('./vehicleController');
+const { logAudit } = require('../utils/auditLogger');
+const mongoose = require('mongoose');
 
-const getDriverId = (req) => req?.user?.id || req?.user?._id || 'driver-001';
-const getDriverName = (req) => req?.user?.name || 'Driver';
+const getDriverId = (req) => req?.user?.id || req?.user?._id;
+const getDriverName = (req) => req?.user?.name;
 
-const getDriverQuery = (req) => {
+const getDriverQuery = async (req) => {
   const driverId = getDriverId(req);
   const driverName = getDriverName(req);
-  return { $or: [{ driverId }, { driverName }, { driverId: 'driver-001' }] };
+
+  const orConditions = [];
+  if (driverId) {
+    orConditions.push({ driverId });
+    orConditions.push({ driverId: String(driverId) });
+  }
+  if (driverName) {
+    orConditions.push({ driverName: new RegExp(`^${driverName.trim()}$`, 'i') });
+  }
+
+  if (orConditions.length === 0) {
+    return { driverId: 'none' };
+  }
+
+  return { $or: orConditions };
 };
 
-const buildDriverPayload = async (req) => {
-  const driverQuery = getDriverQuery(req);
+const getActiveAssignmentForDriver = async (req) => {
+  const query = await getDriverQuery(req);
+  let assignment = await Assignment.findOne({ ...query, status: 'Active' }).sort({ assignedDate: -1 }).lean();
 
-  let assignment = await Assignment.findOne(driverQuery).sort({ assignedDate: -1 }).lean();
-  let assignments = await Assignment.find(driverQuery).sort({ assignedDate: -1 }).lean();
-  if (!assignments || assignments.length === 0) {
-    assignments = await Assignment.find().sort({ assignedDate: -1 }).lean();
-    if (!assignment && assignments.length > 0) {
-      assignment = assignments[0];
+  if (!assignment) {
+    assignment = await Assignment.findOne(query).sort({ assignedDate: -1 }).lean();
+  }
+
+  let vehicle = null;
+  if (assignment) {
+    if (assignment.vehicleId && mongoose.Types.ObjectId.isValid(assignment.vehicleId)) {
+      vehicle = await Vehicle.findById(assignment.vehicleId);
+    }
+    if (!vehicle && assignment.registrationNumber) {
+      vehicle = await Vehicle.findOne({ registrationNumber: assignment.registrationNumber });
     }
   }
 
-  const checklist = await Checklist.findOne().sort({ submittedAt: -1 }).lean();
-  const notifications = await Notification.find().sort({ createdAt: -1 }).limit(5).lean();
-  const serviceHistory = await ServiceHistory.find().sort({ performedDate: -1 }).lean();
-  const tripStatus = await TripStatus.findOne().sort({ createdAt: -1 }).lean();
+  if (!vehicle && req.user?.name) {
+    vehicle = await Vehicle.findOne({
+      $or: [
+        { assignedDriver: req.user.name },
+        { driverAssigned: req.user.name },
+        { assignedDriverId: req.user.id }
+      ]
+    });
+
+    if (vehicle && !assignment) {
+      assignment = {
+        _id: vehicle._id,
+        vehicleId: vehicle._id,
+        registrationNumber: vehicle.registrationNumber,
+        vehicleNumber: vehicle.registrationNumber,
+        driverId: req.user.id,
+        driverName: req.user.name,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        status: 'Active',
+      };
+    }
+  }
+
+  if (vehicle) {
+    await recalculateComplianceStatus(vehicle._id);
+    const updatedVehicle = await Vehicle.findById(vehicle._id).lean();
+
+    if (updatedVehicle) {
+      const realComplianceStatus = updatedVehicle.complianceStatus || updatedVehicle.complianceSummary?.overallStatus || 'Valid';
+      const insuranceExpiry = updatedVehicle.complianceSummary?.insuranceExpiry || updatedVehicle.insurance?.expiryDate || null;
+      const pollutionExpiry = updatedVehicle.complianceSummary?.pollutionExpiry || updatedVehicle.pollution?.expiryDate || null;
+      const fitnessExpiry = updatedVehicle.complianceSummary?.fitnessExpiry || updatedVehicle.fitness?.expiryDate || null;
+
+      assignment = {
+        ...assignment,
+        vehicleId: updatedVehicle._id,
+        registrationNumber: updatedVehicle.registrationNumber,
+        vehicleNumber: updatedVehicle.registrationNumber,
+        vehicleName: `${updatedVehicle.brand || ''} ${updatedVehicle.model || ''}`.trim() || updatedVehicle.registrationNumber,
+        brand: updatedVehicle.brand,
+        model: updatedVehicle.model,
+        complianceStatus: realComplianceStatus,
+        insuranceExpiry: insuranceExpiry,
+        pollutionExpiry: pollutionExpiry,
+        fitnessExpiry: fitnessExpiry,
+        complianceSummary: updatedVehicle.complianceSummary || {
+          insuranceStatus: updatedVehicle.insurance?.status || 'Valid',
+          insuranceExpiry: insuranceExpiry,
+          overallStatus: realComplianceStatus
+        }
+      };
+    }
+  }
+
+  return assignment;
+};
+
+const buildDriverPayload = async (req) => {
+  const driverQuery = await getDriverQuery(req);
+  const assignment = await getActiveAssignmentForDriver(req);
+  const assignments = await Assignment.find(driverQuery).sort({ assignedDate: -1 }).lean();
+
+  const driverId = getDriverId(req) || 'driver-001';
+  const checklist = await Checklist.findOne({ driverId }).sort({ createdAt: -1 }).lean()
+    || await Checklist.findOne().sort({ createdAt: -1 }).lean();
+
+  const notifications = await Notification.find({
+    $or: [{ role: 'Driver' }, { vehicleId: assignment?.vehicleId }]
+  }).sort({ createdAt: -1 }).limit(5).lean();
+
+  let serviceHistory = [];
+  if (assignment?.registrationNumber) {
+    serviceHistory = await ServiceHistory.find({
+      $or: [
+        { vehicle: assignment.registrationNumber },
+        { vehicleNumber: assignment.registrationNumber },
+        { vehicleId: assignment.vehicleId }
+      ]
+    }).sort({ performedDate: -1 }).lean();
+  }
+
+  const tripStatus = await TripStatus.findOne({ driverId }).sort({ createdAt: -1 }).lean();
 
   return {
     assignment,
@@ -55,7 +160,8 @@ exports.getDriverDashboard = async (req, res) => {
 exports.createChecklist = async (req, res) => {
   try {
     const { tyres, brakes, lights, fuel, mirrors, horn } = req.body;
-    const driverId = getDriverId(req);
+    const driverId = getDriverId(req) || 'driver-001';
+    const assignment = await getActiveAssignmentForDriver(req);
 
     if (typeof tyres !== 'boolean' || typeof brakes !== 'boolean' || typeof lights !== 'boolean' || typeof fuel !== 'boolean' || typeof mirrors !== 'boolean' || typeof horn !== 'boolean') {
       return res.status(400).json({ message: 'All checklist fields are required' });
@@ -63,7 +169,7 @@ exports.createChecklist = async (req, res) => {
 
     const checklist = await Checklist.create({
       driverId,
-      vehicleId: req.body.vehicleId || 'VH-102',
+      vehicleId: req.body.vehicleId || assignment?.registrationNumber || 'VH-102',
       tyres,
       brakes,
       lights,
@@ -87,7 +193,7 @@ exports.createChecklist = async (req, res) => {
 
 exports.startTrip = async (req, res) => {
   try {
-    const driverId = getDriverId(req);
+    const driverId = getDriverId(req) || 'driver-001';
     const trip = await TripStatus.findOne({ driverId });
 
     if (!trip || !trip.checklistCompleted) {
@@ -114,29 +220,117 @@ exports.createIssueReport = async (req, res) => {
   try {
     const { issueType, description, priority, date } = req.body;
     const driverId = getDriverId(req);
+    const driverName = getDriverName(req) || 'Driver';
 
     if (!issueType || !description || !priority || !date) {
-      return res.status(400).json({ message: 'All issue report fields are required' });
+      return res.status(400).json({ message: 'All issue report fields (Issue Type, Description, Priority, Date) are required' });
     }
 
+    // 1. Identify active assigned vehicle
+    const assignment = await getActiveAssignmentForDriver(req);
+    let vehicle = null;
+
+    if (assignment) {
+      if (assignment.vehicleId && mongoose.Types.ObjectId.isValid(assignment.vehicleId)) {
+        vehicle = await Vehicle.findById(assignment.vehicleId);
+      }
+      if (!vehicle && assignment.registrationNumber) {
+        vehicle = await Vehicle.findOne({ registrationNumber: assignment.registrationNumber });
+      }
+    }
+
+    if (!vehicle) {
+      // Search if user has any assigned vehicle in Vehicle collection directly
+      vehicle = await Vehicle.findOne({
+        $or: [
+          { assignedDriver: driverName },
+          { driverAssigned: driverName },
+          { assignedDriverId: driverId }
+        ]
+      });
+    }
+
+    if (!vehicle) {
+      return res.status(400).json({
+        success: false,
+        message: 'No active vehicle assignment found for this driver. Please contact your Fleet Manager to assign a vehicle before reporting an issue.'
+      });
+    }
+
+    // 2. Persist IssueReport
     const issueReport = await IssueReport.create({
-      driverId,
-      issueType,
-      description,
-      priority,
-      date,
+      driverId: driverId || 'driver-001',
+      driverName,
+      vehicleId: vehicle._id,
+      registrationNumber: vehicle.registrationNumber,
+      issueType: issueType.trim(),
+      description: description.trim(),
+      priority: priority || 'Medium',
+      status: 'Pending',
+      date: date ? new Date(date) : new Date(),
     });
 
-    res.status(201).json({ message: 'Issue report saved successfully', issueReport });
+    // 3. Create Service Queue record for Service Center
+    const reg = vehicle.registrationNumber;
+    const queueItem = new ServiceQueue({
+      vehicleId: vehicle._id,
+      vehicleNumber: reg,
+      ownerBranch: vehicle.branch || 'Head Office',
+      vehicleModel: `${vehicle.brand || ''} ${vehicle.model || ''}`.trim() || 'Fleet Vehicle',
+      currentMileage: vehicle.mileage || 0,
+      issue: `${issueType.trim()}: ${description.trim()}`,
+      serviceType: issueType.trim() || 'Corrective Maintenance',
+      priority: priority || 'Medium',
+      status: 'Waiting',
+      estimatedCost: 0,
+      scheduledDate: new Date(),
+    });
+    await queueItem.save();
+
+    // 4. Update Vehicle status in MongoDB
+    vehicle.maintenanceStatus = 'Under Maintenance';
+    vehicle.status = 'Under Service';
+    await vehicle.save();
+
+    // 5. Create Notification
+    await Notification.create({
+      title: 'New Vehicle Issue Reported',
+      message: `Driver ${driverName} reported an issue (${issueType}) for vehicle ${reg}. Request added to Service Queue.`,
+      type: 'warning',
+      category: 'Maintenance',
+      vehicleId: vehicle._id,
+      role: 'Service Center',
+    });
+
+    // 6. Log Audit Trail
+    await logAudit({
+      user: driverName,
+      userEmail: req.user?.email || '',
+      role: 'Driver',
+      action: 'Vehicle Issue Reported',
+      module: 'Driver Portal',
+      status: 'Success',
+      next: `Issue reported for ${reg}. Added to Service Center queue.`,
+      reason: description.trim(),
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Vehicle issue report submitted successfully.',
+      issueReport,
+      serviceQueueItem: queueItem,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to save issue report', error: error.message });
+    res.status(500).json({ success: false, message: error.message || 'Failed to save issue report' });
   }
 };
 
 exports.getNotifications = async (req, res) => {
   try {
-    const driverId = getDriverId(req);
-    const notifications = await Notification.find().sort({ createdAt: -1 }).lean();
+    const assignment = await getActiveAssignmentForDriver(req);
+    const notifications = await Notification.find({
+      $or: [{ role: 'Driver' }, { vehicleId: assignment?.vehicleId }]
+    }).sort({ createdAt: -1 }).lean();
     res.json(notifications);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch notifications', error: error.message });
@@ -145,11 +339,8 @@ exports.getNotifications = async (req, res) => {
 
 exports.getAssignments = async (req, res) => {
   try {
-    const driverQuery = getDriverQuery(req);
-    let assignments = await Assignment.find(driverQuery).sort({ assignedDate: -1 }).lean();
-    if (!assignments || assignments.length === 0) {
-      assignments = await Assignment.find().sort({ assignedDate: -1 }).lean();
-    }
+    const driverQuery = await getDriverQuery(req);
+    const assignments = await Assignment.find(driverQuery).sort({ assignedDate: -1 }).lean();
     res.json(assignments);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch assignment history', error: error.message });
@@ -158,10 +349,20 @@ exports.getAssignments = async (req, res) => {
 
 exports.getServiceHistory = async (req, res) => {
   try {
-    const driverQuery = getDriverQuery(req);
-    const serviceHistory = await ServiceHistory.find(driverQuery).sort({ performedDate: -1 }).lean();
+    const assignment = await getActiveAssignmentForDriver(req);
+    let serviceHistory = [];
+    if (assignment?.registrationNumber) {
+      serviceHistory = await ServiceHistory.find({
+        $or: [
+          { vehicle: assignment.registrationNumber },
+          { vehicleNumber: assignment.registrationNumber },
+          { vehicleId: assignment.vehicleId }
+        ]
+      }).sort({ performedDate: -1 }).lean();
+    }
     res.json(serviceHistory);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch service history', error: error.message });
   }
 };
+

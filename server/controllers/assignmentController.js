@@ -5,6 +5,8 @@ const OverrideLog = require('../models/OverrideLog');
 const { logAudit } = require('../utils/auditLogger');
 const mongoose = require('mongoose');
 
+const { recalculateComplianceStatus } = require('./vehicleController');
+
 // ASSIGN VEHICLE TO DRIVER
 const assignVehicle = async (req, res) => {
   try {
@@ -40,8 +42,12 @@ const assignVehicle = async (req, res) => {
     const finalDriverName = driver ? driver.name : (driverName || 'Driver').trim();
     const finalDriverId = driver ? driver._id : (driverId || 'driver-001');
 
+    // Recalculate Compliance Status for Vehicle
+    await recalculateComplianceStatus(vehicle._id);
+    const updatedVehicle = (await Vehicle.findById(vehicle._id)) || vehicle;
+
     // Business Rule Check: Non-compliant vehicle assignment
-    const complianceStatus = vehicle.complianceSummary?.overallStatus || 'Valid';
+    const complianceStatus = updatedVehicle.complianceStatus || updatedVehicle.complianceSummary?.overallStatus || 'Valid';
     let isOverrideApplied = false;
 
     if (complianceStatus === 'Expired') {

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { verifyToken } = require('../middleware/auth');
 const {
   getDriverDashboard,
   createChecklist,
@@ -10,6 +11,8 @@ const {
   getServiceHistory,
 } = require('../controllers/driverController');
 
+router.use(verifyToken);
+
 router.get('/dashboard', getDriverDashboard);
 router.get('/notifications', getNotifications);
 router.get('/assignments', getAssignments);
@@ -19,3 +22,4 @@ router.post('/trip/start', startTrip);
 router.post('/issues', createIssueReport);
 
 module.exports = router;
+
