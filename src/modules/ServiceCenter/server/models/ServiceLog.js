@@ -46,4 +46,4 @@ const serviceLogSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('ServiceLog', serviceLogSchema);
+module.exports = mongoose.models.ServiceLog || mongoose.model('ServiceLog', serviceLogSchema);

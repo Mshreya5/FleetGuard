@@ -33,8 +33,11 @@ const {
   deleteUser,
   updateUserStatus,
   changePassword,
+<<<<<<< HEAD
   getDriverCount,
   getFleetManagerCount,
+=======
+>>>>>>> origin/dev
 } = require('./controllers/userController');
 
 const {
@@ -43,8 +46,11 @@ const {
   addVehicle,
   updateVehicle,
   deleteVehicle,
+<<<<<<< HEAD
   getVehicleCount,
   getMaintenanceCount,
+=======
+>>>>>>> origin/dev
 } = require('./controllers/vehicleController');
 
 const {
@@ -142,8 +148,11 @@ app.post('/api/users', verifyToken, requireRole(['Admin']), createUser);
 app.put('/api/users/:id', verifyToken, requireRole(['Admin']), updateUser);
 app.delete('/api/users/:id', verifyToken, requireRole(['Admin']), deleteUser);
 app.patch('/api/users/status/:id', verifyToken, requireRole(['Admin']), updateUserStatus);
+<<<<<<< HEAD
 app.get('/api/admin/drivers/count', verifyToken, requireRole(['Admin']), getDriverCount);
 app.get('/api/admin/fleet-managers/count', verifyToken, requireRole(['Admin']), getFleetManagerCount);
+=======
+>>>>>>> origin/dev
 
 // 2. VEHICLE MANAGEMENT
 app.get('/api/vehicles', verifyToken, getVehicles);
@@ -151,8 +160,11 @@ app.get('/api/vehicles/:id', verifyToken, getVehicle);
 app.post('/api/vehicles', verifyToken, requireRole(['Admin', 'Fleet Manager']), addVehicle);
 app.put('/api/vehicles/:id', verifyToken, requireRole(['Admin', 'Fleet Manager']), updateVehicle);
 app.delete('/api/vehicles/:id', verifyToken, requireRole(['Admin', 'Fleet Manager']), deleteVehicle);
+<<<<<<< HEAD
 app.get('/api/admin/vehicles/count', verifyToken, requireRole(['Admin']), getVehicleCount);
 app.get('/api/admin/vehicles/maintenance-count', verifyToken, requireRole(['Admin']), getMaintenanceCount);
+=======
+>>>>>>> origin/dev
 
 // Fleet Manager API compatibility
 app.use('/api/v1/fleet-manager/vehicles', verifyToken, getVehicles);
@@ -227,6 +239,7 @@ app.use((err, req, res, next) => {
 });
 
 async function startServer() {
+<<<<<<< HEAD
   try {
     const dbConnection = await connectDB();
     if (!dbConnection) {
@@ -251,6 +264,23 @@ async function startServer() {
     console.error('[FleetGuard Unified Backend] Server startup error:', error.message);
     process.exit(1);
   }
+=======
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`[FleetGuard Unified Server] Running on http://localhost:${PORT}`);
+    console.log(`- Auth & Users:      /api/auth, /api/users`);
+    console.log(`- Vehicles:          /api/vehicles`);
+    console.log(`- Assignments:       /api/assignments`);
+    console.log(`- Compliance:        /api/compliance`);
+    console.log(`- Driver APIs:       /api/driver`);
+    console.log(`- Service Center:    /api/service-center`);
+    console.log(`- Admin APIs:        /api/admin`);
+    console.log(`- Audit Logs:        /api/audit-logs`);
+    console.log(`- Notifications:     /api/notifications`);
+    console.log(`====================================================`);
+  });
+>>>>>>> origin/dev
 }
 
 startServer();

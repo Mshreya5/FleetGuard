@@ -32,8 +32,10 @@ export default function AddHistoricalRecords() {
 
   const fetchRecords = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/service-center/extensions/historical');
-      setRecords(response.data);
+      const response = await axios.get('/api/service-center/extensions/historical');
+      const data = response.data;
+      const items = Array.isArray(data) ? data : (data?.records || data?.history || []);
+      setRecords(items);
     } catch (error) {
       console.error('Unable to fetch historical records', error);
     }
@@ -48,7 +50,7 @@ export default function AddHistoricalRecords() {
     if (!validate()) return;
 
     try {
-      await axios.post('http://localhost:5000/api/service-center/extensions/history', {
+      await axios.post('/api/service-center/extensions/history', {
         ...formValues,
         cost: Number(formValues.cost || 0),
         date: new Date(formValues.date).toISOString(),
@@ -60,6 +62,8 @@ export default function AddHistoricalRecords() {
       setStatus(error.response?.data?.message || 'Unable to save record.');
     }
   };
+
+  const safeRecords = Array.isArray(records) ? records : [];
 
   return (
     <>
@@ -108,11 +112,11 @@ export default function AddHistoricalRecords() {
 
         <aside className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Saved Historical Records</h2>
-          {records.length === 0 ? <p className={styles.sectionSubtitle}>No historical records yet.</p> : records.slice(0, 5).map((record) => (
-            <div key={record._id} className={styles.submissionItem} style={{ marginTop: '8px' }}>
+          {safeRecords.length === 0 ? <p className={styles.sectionSubtitle}>No historical records yet.</p> : safeRecords.slice(0, 5).map((record, i) => (
+            <div key={record._id || i} className={styles.submissionItem} style={{ marginTop: '8px' }}>
               <strong>{record.vehicle}</strong>
               <span>{record.description}</span>
-              <small>{new Date(record.date).toLocaleDateString()} • ${Number(record.cost || 0).toFixed(2)}</small>
+              <small>{new Date(record.date || record.createdAt).toLocaleDateString()} • ₹{Number(record.cost || 0).toLocaleString()}</small>
             </div>
           ))}
         </aside>

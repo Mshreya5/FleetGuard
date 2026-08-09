@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import './Login.css';
-
 
 const roles = [
   "Fleet Manager",
@@ -11,7 +11,8 @@ const roles = [
 ];
 
 export default function Login() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const auth = useAuth();
   const [selectedRole, setSelectedRole] = useState("");
 
   const [email, setEmail] = useState("");
@@ -42,37 +43,66 @@ export default function Login() {
     return Object.keys(err).length === 0;
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setErrors({});
 
     if (!selectedRole) {
       setErrors({ role: "Please select a role" });
       return;
     }
 
-    if (email.trim() || password) {
-      if (!validate()) return;
-    }
+    if (!validate()) return;
 
-    switch (selectedRole) {
-      case "Fleet Manager":
-        navigate("/fleetmanager/dashboard");
-        break;
+    const normalizedRole = selectedRole.startsWith("Service Center") ? "Service Center" : selectedRole;
 
-      case "Driver":
-        navigate("/driver/dashboard");
-        break;
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          role: normalizedRole
+        })
+      });
+      const data = await response.json();
 
-      case "Service Center / Mechanic":
-        navigate("/servicecenter/dashboard");
-        break;
+      if (!response.ok || !data.success) {
+        setErrors({ server: data.message || "Invalid credentials or unauthorized role access." });
+        return;
+      }
 
-      case "Admin":
-        navigate("/admin/dashboard");
-        break;
+      if (data && data.token && auth && auth.login) {
+        auth.login(data.token, data.user || { email: email.trim(), role: normalizedRole });
+      } else if (data && data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user || { email: email.trim(), role: normalizedRole }));
+      }
 
-      default:
-        break;
+      switch (selectedRole) {
+        case "Fleet Manager":
+          navigate("/fleetmanager/dashboard");
+          break;
+
+        case "Driver":
+          navigate("/driver/dashboard");
+          break;
+
+        case "Service Center / Mechanic":
+        case "Service Center":
+          navigate("/servicecenter/dashboard");
+          break;
+
+        case "Admin":
+          navigate("/admin/dashboard");
+          break;
+
+        default:
+          break;
+      }
+    } catch (err) {
+      setErrors({ server: "Unable to connect to FleetGuard server. Please try again." });
     }
   };
 
@@ -225,7 +255,21 @@ export default function Login() {
                 </p>
               )}
             </div>
-                        <button
+
+            {errors.server && (
+              <p
+                style={{
+                  color: "#ef4444",
+                  fontSize: "14px",
+                  marginBottom: "14px",
+                  textAlign: "center",
+                }}
+              >
+                {errors.server}
+              </p>
+            )}
+
+            <button
               type="submit"
               style={{
                 width: "100%",
@@ -256,25 +300,23 @@ export default function Login() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#94a3b8",
+                  color: "#3b82f6",
                   cursor: "pointer",
                 }}
               >
                 Forgot Password?
               </button>
 
-              <button
-                type="button"
-                onClick={() => setShowChange(true)}
+              <Link
+                to="/register"
                 style={{
-                  background: "none",
-                  border: "none",
-                  color: "#94a3b8",
-                  cursor: "pointer",
+                  color: "#3b82f6",
+                  textDecoration: "none",
+                  fontWeight: 600,
                 }}
               >
-                Change Password
-              </button>
+                Register Account
+              </Link>
             </div>
           </form>
         )}

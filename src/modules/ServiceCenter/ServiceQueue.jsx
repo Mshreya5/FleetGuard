@@ -9,8 +9,10 @@ export default function ServiceQueue() {
   useEffect(() => {
     const fetchQueue = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/service-center/queue');
-        setQueueItems(response.data);
+        const response = await axios.get('/api/service-center/queue');
+        const data = response.data;
+        const items = Array.isArray(data) ? data : (data?.queue || []);
+        setQueueItems(items);
       } catch (error) {
         console.error('Unable to load queue data', error);
       }

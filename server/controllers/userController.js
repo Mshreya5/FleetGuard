@@ -51,7 +51,11 @@ const registerUser = async (req, res) => {
     }
 
     // Unique Email Check
+<<<<<<< HEAD
     const existingEmail = await User.findOne({ email: cleanEmail }).maxTimeMS(30000);
+=======
+    const existingEmail = await User.findOne({ email: cleanEmail });
+>>>>>>> origin/dev
     if (existingEmail) {
       return res.status(409).json({ success: false, message: 'An account with this email address already exists. Please login instead.' });
     }
@@ -96,9 +100,13 @@ const loginUser = async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+<<<<<<< HEAD
     
     // Add timeout to the query
     const user = await User.findOne({ email: cleanEmail }).maxTimeMS(30000);
+=======
+    const user = await User.findOne({ email: cleanEmail });
+>>>>>>> origin/dev
 
     if (!user) {
       await logAudit({
@@ -592,6 +600,7 @@ const changePassword = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 // COUNT TOTAL DRIVERS
 const getDriverCount = async (req, res) => {
   try {
@@ -618,6 +627,8 @@ const getFleetManagerCount = async (req, res) => {
   }
 };
 
+=======
+>>>>>>> origin/dev
 module.exports = {
   registerUser,
   loginUser,
@@ -629,6 +640,9 @@ module.exports = {
   deleteUser,
   updateUserStatus,
   changePassword,
+<<<<<<< HEAD
   getDriverCount,
   getFleetManagerCount,
+=======
+>>>>>>> origin/dev
 };

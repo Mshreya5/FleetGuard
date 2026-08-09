@@ -1,49 +1,8 @@
 const ServiceQueue = require('../models/ServiceQueue');
 const ServiceLog = require('../models/ServiceLog');
 
-const fallbackQueue = [
-  {
-    _id: 'queue-1',
-    vehicleNumber: 'CAB-204',
-    ownerBranch: 'North Branch',
-    vehicleModel: 'Toyota Corolla',
-    currentMileage: 18500,
-    issue: 'Oil change and tyre rotation',
-    priority: 'High',
-    status: 'Waiting',
-    createdAt: new Date('2025-01-15T09:00:00.000Z'),
-  },
-  {
-    _id: 'queue-2',
-    vehicleNumber: 'TRK-118',
-    ownerBranch: 'Central Depot',
-    vehicleModel: 'Ford Ranger',
-    currentMileage: 42000,
-    issue: 'Brake inspection',
-    priority: 'Medium',
-    status: 'In Progress',
-    createdAt: new Date('2025-01-15T08:30:00.000Z'),
-  },
-];
-
-const fallbackLogs = [
-  {
-    _id: 'log-1',
-    vehicle: 'CAB-204',
-    serviceType: 'Full Service',
-    mechanicName: 'R. Silva',
-    revenue: 180,
-    createdAt: new Date('2025-01-15T11:00:00.000Z'),
-  },
-  {
-    _id: 'log-2',
-    vehicle: 'TRK-118',
-    serviceType: 'Brake Repair',
-    mechanicName: 'K. Patel',
-    revenue: 240,
-    createdAt: new Date('2025-01-15T07:15:00.000Z'),
-  },
-];
+const fallbackQueue = [];
+const fallbackLogs = [];
 
 function getFallbackData() {
   return {
@@ -63,28 +22,40 @@ async function getDashboardData(req, res) {
     let waitingCount = 0;
     let inServiceCount = 0;
     let completedTodayCount = 0;
+    let totalRevenue = 0;
     let queueRecords = fallbackData.queue;
     let serviceLogs = fallbackData.logs;
 
     try {
-      const [waiting, inService, completedToday, queued, logs] = await Promise.all([
+      const ServiceHistory = require('../models/ServiceHistory');
+
+      const [waiting, inService, completedLogsCount, completedHistoryCount, queued, logs, histories] = await Promise.all([
         ServiceQueue.countDocuments({ status: 'Waiting' }),
         ServiceQueue.countDocuments({ status: 'In Progress' }),
         ServiceLog.countDocuments({ createdAt: { $gte: startOfToday, $lte: endOfToday } }),
+        ServiceHistory.countDocuments({ status: 'Completed', createdAt: { $gte: startOfToday, $lte: endOfToday } }),
         ServiceQueue.find().sort({ createdAt: -1 }).limit(10),
         ServiceLog.find().sort({ createdAt: -1 }).limit(6),
+        ServiceHistory.find({ status: 'Completed' }).sort({ createdAt: -1 }).limit(10),
       ]);
 
       waitingCount = waiting;
       inServiceCount = inService;
-      completedTodayCount = completedToday;
+      completedTodayCount = completedLogsCount + completedHistoryCount;
       queueRecords = queued.length ? queued : queueRecords;
       serviceLogs = logs.length ? logs : serviceLogs;
+
+      const logRev = logs.reduce((sum, log) => sum + (Number(log.revenue) || 0), 0);
+      const historyRev = histories.reduce((sum, h) => sum + (Number(h.cost) || 0), 0);
+      totalRevenue = logRev + historyRev;
+
+      if (!totalRevenue) {
+        totalRevenue = serviceLogs.reduce((sum, log) => sum + (Number(log.revenue) || 0), 0);
+      }
     } catch (dbError) {
       console.warn('Using fallback service center data:', dbError.message);
+      totalRevenue = serviceLogs.reduce((sum, log) => sum + (Number(log.revenue) || 0), 0);
     }
-
-    const totalRevenue = serviceLogs.reduce((sum, log) => sum + (Number(log.revenue) || 0), 0);
 
     const upcomingServices = queueRecords
       .filter((record) => record.status !== 'Completed')

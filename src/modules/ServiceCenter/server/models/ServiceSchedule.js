@@ -38,4 +38,4 @@ const serviceScheduleSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('ServiceSchedule', serviceScheduleSchema);
+module.exports = mongoose.models.ServiceSchedule || mongoose.model('ServiceSchedule', serviceScheduleSchema);

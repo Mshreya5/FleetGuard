@@ -40,8 +40,8 @@ const AdminDashboard = () => {
   useEffect(() => {
     let isMounted = true;
 
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchData = async (showSpinner = true) => {
+      if (showSpinner) setLoading(true);
       setError('');
 
       try {
@@ -73,16 +73,21 @@ const AdminDashboard = () => {
         setUpcomingExpiryData(expiryRes.data?.expiries || []);
         setRecentNotifications([]);
       } catch {
-        if (isMounted) {
+        if (isMounted && showSpinner) {
           setError('Unable to load fleet data from the backend. Please verify the API server and database connection.');
         }
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted && showSpinner) setLoading(false);
       }
     };
 
-    fetchData();
-    return () => { isMounted = false; };
+    fetchData(true);
+    const intervalId = setInterval(() => fetchData(false), 5000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
 
   const filteredCompliance = useMemo(() => {

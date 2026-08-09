@@ -15,4 +15,4 @@ const overrideLogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('OverrideLog', overrideLogSchema);
+module.exports = mongoose.models.OverrideLog || mongoose.model('OverrideLog', overrideLogSchema);

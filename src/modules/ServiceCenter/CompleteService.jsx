@@ -34,7 +34,8 @@ export default function CompleteService() {
     if (!validate()) return;
 
     try {
-      await axios.post('http://localhost:5000/api/service-center/extensions/complete', {
+      const apiEndpoint = '/api/service-center/extensions/complete';
+      await axios.post(apiEndpoint, {
         ...formValues,
         totalCost: Number(formValues.totalCost),
       });

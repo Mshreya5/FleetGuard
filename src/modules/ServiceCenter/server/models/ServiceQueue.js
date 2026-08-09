@@ -42,4 +42,4 @@ const serviceQueueSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('ServiceQueue', serviceQueueSchema);
+module.exports = mongoose.models.ServiceQueue || mongoose.model('ServiceQueue', serviceQueueSchema);

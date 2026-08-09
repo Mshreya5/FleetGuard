@@ -10,4 +10,4 @@ const alertSettingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('AlertSettings', alertSettingsSchema);
+module.exports = mongoose.models.AlertSettings || mongoose.model('AlertSettings', alertSettingsSchema);

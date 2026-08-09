@@ -1,0 +1,773 @@
+{
+	"info": {
+		"_postman_id": "a8717e41-73c3-4cfe-948c-96197273d15c",
+		"name": "FleetGuard FleetManager API Collection",
+		"description": "Complete Postman v2.1.0 collection for testing all 10 FleetGuard Fleet Manager module REST API endpoints (FG-FM-01 through FG-FM-10).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "vehicleId",
+			"value": "66a8717e4173c3cfe948c961",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "FG-FM-01 Dashboard Summary",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/dashboard/summary",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"dashboard",
+						"summary"
+					]
+				},
+				"description": "Fetches aggregated dashboard card statistics including total vehicles, assigned, available, compliance status summary, and recently added vehicles."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/dashboard/summary",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"summary"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"cards\": {\n    \"totalVehicles\": 12,\n    \"assignedVehicles\": 5,\n    \"availableVehicles\": 7,\n    \"complianceSummary\": {\n      \"valid\": 8,\n      \"expiringSoon\": 2,\n      \"expired\": 2\n    },\n    \"expiringDocuments\": 4\n  },\n  \"recentlyAddedVehicles\": [\n    {\n      \"_id\": \"66a8717e4173c3cfe948c961\",\n      \"registrationNumber\": \"KA-01-EA-1001\",\n      \"model\": \"Prima 2830.K\",\n      \"brand\": \"Tata\",\n      \"branch\": \"North Hub\",\n      \"status\": \"Available\",\n      \"createdAt\": \"2026-07-31T10:00:00.000Z\"\n    }\n  ]\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-02 Vehicle Registration",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"registrationNumber\": \"KA-01-EQ-9988\",\n  \"model\": \"Prima 2830.K\",\n  \"brand\": \"Tata\",\n  \"branch\": \"North Hub\",\n  \"manufacturingYear\": 2024,\n  \"mileage\": 12500,\n  \"fuelType\": \"Diesel\",\n  \"vehicleType\": \"Truck\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/vehicles",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"vehicles"
+					]
+				},
+				"description": "Registers a new fleet vehicle asset into MongoDB after validating input fields and checking for registration number duplicates."
+			},
+			"response": [
+				{
+					"name": "Sample Created Response (201 Created)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"registrationNumber\": \"KA-01-EQ-9988\",\n  \"model\": \"Prima 2830.K\",\n  \"brand\": \"Tata\",\n  \"branch\": \"North Hub\",\n  \"manufacturingYear\": 2024,\n  \"mileage\": 12500,\n  \"fuelType\": \"Diesel\",\n  \"vehicleType\": \"Truck\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vehicles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"vehicles"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"_id\": \"66a8717e4173c3cfe948c961\",\n  \"registrationNumber\": \"KA-01-EQ-9988\",\n  \"model\": \"Prima 2830.K\",\n  \"brand\": \"Tata\",\n  \"branch\": \"North Hub\",\n  \"manufacturingYear\": 2024,\n  \"mileage\": 12500,\n  \"fuelType\": \"Diesel\",\n  \"vehicleType\": \"Truck\",\n  \"status\": \"Available\",\n  \"assignedDriver\": \"Unassigned\",\n  \"complianceSummary\": {\n    \"insuranceStatus\": \"Missing\",\n    \"pollutionStatus\": \"Missing\",\n    \"fitnessStatus\": \"Missing\",\n    \"rcStatus\": \"Missing\",\n    \"overallStatus\": \"Expired\"\n  },\n  \"createdAt\": \"2026-07-31T11:00:00.000Z\"\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-03 Vehicle List",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/vehicles?page=1&limit=10&search=&status=All",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"vehicles"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "search",
+							"value": ""
+						},
+						{
+							"key": "status",
+							"value": "All"
+						}
+					]
+				},
+				"description": "Retrieves paginated vehicle fleet list with support for regex search filtering across registration number, brand, model, and branch."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/vehicles?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"vehicles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"vehicles\": [\n    {\n      \"_id\": \"66a8717e4173c3cfe948c961\",\n      \"registrationNumber\": \"KA-01-EQ-9988\",\n      \"model\": \"Prima 2830.K\",\n      \"brand\": \"Tata\",\n      \"branch\": \"North Hub\",\n      \"manufacturingYear\": 2024,\n      \"mileage\": 12500,\n      \"fuelType\": \"Diesel\",\n      \"vehicleType\": \"Truck\",\n      \"status\": \"Available\",\n      \"assignedDriver\": \"Unassigned\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"pages\": 1\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-04 Vehicle Details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/vehicles/:id",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"vehicles",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{vehicleId}}"
+						}
+					]
+				},
+				"description": "Fetches complete details of a vehicle by ID, joining its specifications, uploaded compliance documents, and assignment history logs."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/vehicles/66a8717e4173c3cfe948c961",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"vehicles",
+								"66a8717e4173c3cfe948c961"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"vehicle\": {\n    \"_id\": \"66a8717e4173c3cfe948c961\",\n    \"registrationNumber\": \"KA-01-EQ-9988\",\n    \"model\": \"Prima 2830.K\",\n    \"brand\": \"Tata\",\n    \"branch\": \"North Hub\",\n    \"manufacturingYear\": 2024,\n    \"mileage\": 12500,\n    \"fuelType\": \"Diesel\",\n    \"vehicleType\": \"Truck\",\n    \"status\": \"Available\",\n    \"assignedDriver\": \"Unassigned\"\n  },\n  \"complianceDocs\": [],\n  \"assignmentHistory\": []\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-05 Edit Vehicle",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"mileage\": 18500,\n  \"branch\": \"Central Depot\",\n  \"status\": \"Available\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/vehicles/:id",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"vehicles",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{vehicleId}}"
+						}
+					]
+				},
+				"description": "Updates specifications or operational details for an existing vehicle record in MongoDB."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mileage\": 18500,\n  \"branch\": \"Central Depot\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/vehicles/66a8717e4173c3cfe948c961",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"vehicles",
+								"66a8717e4173c3cfe948c961"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"_id\": \"66a8717e4173c3cfe948c961\",\n  \"registrationNumber\": \"KA-01-EQ-9988\",\n  \"model\": \"Prima 2830.K\",\n  \"brand\": \"Tata\",\n  \"branch\": \"Central Depot\",\n  \"mileage\": 18500,\n  \"status\": \"Available\"\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-06 Delete Vehicle",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/vehicles/:id",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"vehicles",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{vehicleId}}"
+						}
+					]
+				},
+				"description": "Deletes a vehicle document and cascades deletion to linked compliance documents and driver assignment records."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/vehicles/66a8717e4173c3cfe948c961",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"vehicles",
+								"66a8717e4173c3cfe948c961"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"message\": \"Vehicle and related data deleted successfully\"\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-07 Upload Compliance Document",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "vehicleId",
+							"value": "{{vehicleId}}",
+							"type": "text"
+						},
+						{
+							"key": "documentType",
+							"value": "Insurance",
+							"type": "text"
+						},
+						{
+							"key": "issueDate",
+							"value": "2025-01-01",
+							"type": "text"
+						},
+						{
+							"key": "expiryDate",
+							"value": "2026-12-31",
+							"type": "text"
+						},
+						{
+							"key": "document",
+							"type": "file",
+							"src": "/path/to/insurance_policy.pdf"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/compliance/upload",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"compliance",
+						"upload"
+					]
+				},
+				"description": "Uploads a compliance certificate (PDF/Image) via Multer, saves metadata to MongoDB, and recalculates vehicle compliance status."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "vehicleId",
+									"value": "66a8717e4173c3cfe948c961",
+									"type": "text"
+								},
+								{
+									"key": "documentType",
+									"value": "Insurance",
+									"type": "text"
+								},
+								{
+									"key": "issueDate",
+									"value": "2025-01-01",
+									"type": "text"
+								},
+								{
+									"key": "expiryDate",
+									"value": "2026-12-31",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/compliance/upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"compliance",
+								"upload"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"message\": \"Insurance uploaded successfully\",\n  \"document\": {\n    \"_id\": \"66a8717e4173c3cfe948c962\",\n    \"vehicleId\": \"66a8717e4173c3cfe948c961\",\n    \"registrationNumber\": \"KA-01-EQ-9988\",\n    \"documentType\": \"Insurance\",\n    \"filename\": \"document-1722423600000.pdf\",\n    \"originalName\": \"insurance_policy.pdf\",\n    \"filePath\": \"/uploads/document-1722423600000.pdf\",\n    \"issueDate\": \"2025-01-01T00:00:00.000Z\",\n    \"expiryDate\": \"2026-12-31T00:00:00.000Z\",\n    \"status\": \"Valid\"\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-08 Compliance Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/compliance/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"compliance",
+						"status"
+					]
+				},
+				"description": "Fetches global compliance status breakdown across all uploaded fleet certificates."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/compliance/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"compliance",
+								"status"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"summary\": {\n    \"totalDocuments\": 12,\n    \"valid\": 8,\n    \"expiringSoon\": 2,\n    \"expired\": 2\n  },\n  \"documents\": [],\n  \"vehiclesCount\": 5\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-09 Assign Vehicle",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"vehicleId\": \"{{vehicleId}}\",\n  \"driverName\": \"Robert Miller\",\n  \"notes\": \"Assigned for Interstate Delivery route\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/assignments/assign",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"assignments",
+						"assign"
+					]
+				},
+				"description": "Assigns an available vehicle to a designated driver, updating the vehicle operational status to Assigned."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vehicleId\": \"66a8717e4173c3cfe948c961\",\n  \"driverName\": \"Robert Miller\",\n  \"notes\": \"Assigned for Interstate Delivery route\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/assignments/assign",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"assignments",
+								"assign"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"message\": \"Vehicle KA-01-EQ-9988 assigned to Robert Miller successfully\",\n  \"assignment\": {\n    \"_id\": \"66a8717e4173c3cfe948c963\",\n    \"vehicleId\": \"66a8717e4173c3cfe948c961\",\n    \"registrationNumber\": \"KA-01-EQ-9988\",\n    \"driverName\": \"Robert Miller\",\n    \"assignedDate\": \"2026-07-31T11:05:00.000Z\",\n    \"status\": \"Active\",\n    \"notes\": \"Assigned for Interstate Delivery route\"\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "FG-FM-10 Upcoming Expiry List",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/compliance/upcoming-expiry?days=30",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"compliance",
+						"upcoming-expiry"
+					],
+					"query": [
+						{
+							"key": "days",
+							"value": "30"
+						}
+					]
+				},
+				"description": "Fetches list of compliance documents expiring within the next 30 days or already expired for proactive warning alerts."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/compliance/upcoming-expiry?days=30",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"compliance",
+								"upcoming-expiry"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"filterDays\": 30,\n  \"totalCount\": 2,\n  \"expirations\": [\n    {\n      \"_id\": \"66a8717e4173c3cfe948c962\",\n      \"vehicleId\": \"66a8717e4173c3cfe948c961\",\n      \"registrationNumber\": \"KA-01-EQ-9988\",\n      \"documentType\": \"Insurance\",\n      \"daysRemaining\": 15,\n      \"status\": \"Expiring Soon\"\n    }\n  ]\n}"
+				}
+			]
+		},
+		{
+			"name": "Unassign Vehicle",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"vehicleId\": \"{{vehicleId}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/assignments/unassign",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"assignments",
+						"unassign"
+					]
+				},
+				"description": "Returns an assigned vehicle back to the Available pool, setting assignment status to Completed."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vehicleId\": \"66a8717e4173c3cfe948c961\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/assignments/unassign",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"assignments",
+								"unassign"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"message\": \"Vehicle KA-01-EQ-9988 is now available\",\n  \"vehicle\": {\n    \"_id\": \"66a8717e4173c3cfe948c961\",\n    \"status\": \"Available\",\n    \"assignedDriver\": \"Unassigned\"\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"health"
+					]
+				},
+				"description": "Verifies that the Express server is up and responsive."
+			},
+			"response": [
+				{
+					"name": "Sample Success Response (200 OK)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"OK\",\n  \"module\": \"FleetManager\",\n  \"timestamp\": \"2026-07-31T11:05:00.000Z\"\n}"
+				}
+			]
+		}
+	]
+}
