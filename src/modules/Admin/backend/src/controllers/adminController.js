@@ -98,15 +98,10 @@ const getDashboardData = async (req, res) => {
   try {
     const vehicles = await Vehicle.find({}).lean().catch(() => []);
     const complianceData = buildComplianceData(vehicles);
+    const User = mongoose.models.User || require('../../../../../server/models/User');
     
-    const totalDrivers = vehicles.filter((vehicle) => 
-      (vehicle.driverAssigned && vehicle.driverAssigned !== 'Unassigned') ||
-      (vehicle.assignedDriver && vehicle.assignedDriver !== 'Unassigned')
-    ).length;
-    
-    const fleetManagers = vehicles.filter((vehicle) => 
-      vehicle.fleetManager && vehicle.fleetManager !== 'Unassigned'
-    ).length;
+    const totalDrivers = await User.countDocuments({ role: 'Driver' }).catch(() => 0);
+    const fleetManagers = await User.countDocuments({ role: 'Fleet Manager' }).catch(() => 0);
     
     const vehiclesUnderMaintenance = vehicles.filter((vehicle) =>
       vehicle.maintenanceStatus === 'Under Maintenance' ||
@@ -114,7 +109,10 @@ const getDashboardData = async (req, res) => {
       vehicle.status === 'Under Service'
     ).length;
     
-    const Notification = mongoose.models.Notification || require('../models/Notification');
+    const expiryRecords = buildExpiryData(vehicles);
+    const upcomingExpiriesCount = expiryRecords.filter(r => r.status === 'Expiring Soon' || r.status === 'Expired').length;
+
+    const Notification = mongoose.models.Notification || require('../../../../../server/models/Notification');
     const realNotifications = await Notification.find({}).sort({ createdAt: -1 }).limit(5).lean().catch(() => []);
     const notifications = realNotifications.map((n) => n.message || n.description || n.title);
 
@@ -126,7 +124,7 @@ const getDashboardData = async (req, res) => {
         vehiclesUnderMaintenance,
         compliantVehicles: complianceData.summary.compliantVehicles,
         nonCompliantVehicles: vehicles.length - complianceData.summary.compliantVehicles,
-        upcomingExpiries,
+        upcomingExpiries: upcomingExpiriesCount,
       },
       notifications,
     });
@@ -141,7 +139,7 @@ const getDashboardData = async (req, res) => {
         nonCompliantVehicles: 0,
         upcomingExpiries: 0,
       },
-      notifications: ['System operating with initial settings.'],
+      notifications: [],
     });
   }
 };

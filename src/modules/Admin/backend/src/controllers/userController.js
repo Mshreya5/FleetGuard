@@ -52,12 +52,7 @@ const loginUser = async (req, res) => {
     }
 
     if (mongoose.connection.readyState !== 1) {
-      const token = generateToken("mock-id", role || "Admin", email);
-      return res.status(200).json({
-        message: "Login successful (offline fallback)",
-        user: { name: email.split('@')[0], email, role: role || "Admin" },
-        token
-      });
+      return res.status(503).json({ success: false, message: "Database connection unavailable. Please try again." });
     }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
