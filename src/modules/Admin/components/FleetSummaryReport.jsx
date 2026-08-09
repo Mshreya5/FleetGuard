@@ -6,6 +6,7 @@ const FleetSummaryReport = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [generated, setGenerated] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -25,6 +26,70 @@ const FleetSummaryReport = () => {
     return () => { isMounted = false; };
   }, []);
 
+  const generateCSVContent = () => {
+    if (!report) return '';
+
+    let csv = 'FLEETGUARD - FLEET SUMMARY REPORT\n';
+    csv += `Generated: ${new Date().toLocaleString('en-IN')}\n\n`;
+
+    // Summary Statistics
+    csv += 'FLEET STATISTICS\n';
+    csv += `Total Vehicles,${report.totalVehicles}\n`;
+    csv += `Active Vehicles,${report.activeVehicles}\n`;
+    csv += `Inactive Vehicles,${report.inactiveVehicles}\n`;
+    csv += `Total Fleet Managers,${report.users}\n\n`;
+
+    // Compliance Summary
+    csv += 'COMPLIANCE SUMMARY\n';
+    csv += `Compliant Vehicles,${report.complianceSummary.compliant}\n`;
+    csv += `Non-Compliant Vehicles,${report.complianceSummary.nonCompliant}\n`;
+    csv += `Compliance Rate,${report.complianceSummary.complianceRate}%\n\n`;
+
+    // Service Cost Summary
+    csv += 'SERVICE & MAINTENANCE SUMMARY\n';
+    csv += `Total Maintenance Records,${report.serviceCosts.records}\n`;
+    csv += `Total Service Cost,₹${report.serviceCosts.total?.toLocaleString('en-IN') || 0}\n\n`;
+
+    // Vehicle Details Table
+    csv += 'VEHICLE DETAILS\n';
+    csv += 'Registration Number,Driver,Fleet Manager,Branch,Status\n';
+    (report.assignments || []).forEach((a) => {
+      csv += `"${a.registrationNumber}","${a.driver}","${a.fleetManager}","${a.branch}","${a.status}"\n`;
+    });
+
+    return csv;
+  };
+
+  const handleGenerateReport = async () => {
+    try {
+      setDownloading(true);
+      
+      // Generate CSV content
+      const csvContent = generateCSVContent();
+      
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `FleetGuard_Summary_Report_${new Date().getTime()}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setGenerated(true);
+      setTimeout(() => setGenerated(false), 3000);
+    } catch (err) {
+      console.error('Error downloading report:', err);
+      setError('Failed to download report. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <section className="card-section">
       <div className="section-heading compact">
@@ -33,10 +98,10 @@ const FleetSummaryReport = () => {
           <h3>Fleet Summary Report</h3>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-          <button type="button" className="nav-item" onClick={() => setGenerated(true)} disabled={!report} style={{ background: '#3b82f6', borderColor: '#3b82f6', color: '#fff' }}>
-            Generate Report
+          <button type="button" className="nav-item" onClick={handleGenerateReport} disabled={!report || downloading} style={{ background: '#3b82f6', borderColor: '#3b82f6', color: '#fff' }}>
+            {downloading ? 'Downloading...' : 'Generate Report'}
           </button>
-          {generated && <span style={{ fontSize: '0.8rem', color: '#22c55e' }}>Fleet Summary Report generated successfully.</span>}
+          {generated && <span style={{ fontSize: '0.8rem', color: '#22c55e' }}>✓ Report downloaded successfully!</span>}
         </div>
       </div>
 

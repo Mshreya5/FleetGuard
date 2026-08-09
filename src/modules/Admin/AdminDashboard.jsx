@@ -45,19 +45,33 @@ const AdminDashboard = () => {
       setError('');
 
       try {
-        const [dashboardResponse, complianceResponse, expiryResponse] = await Promise.all([
-          axios.get('/api/admin/dashboard'),
+        // Fetch dashboard statistics from individual count endpoints
+        const [vehicleCountRes, driverCountRes, fleetManagerCountRes, maintenanceCountRes, complianceRes, expiryRes] = await Promise.all([
+          axios.get('/api/admin/vehicles/count'),
+          axios.get('/api/admin/drivers/count'),
+          axios.get('/api/admin/fleet-managers/count'),
+          axios.get('/api/admin/vehicles/maintenance-count'),
           axios.get('/api/admin/compliance'),
           axios.get('/api/admin/upcoming-expiry'),
         ]);
 
         if (!isMounted) return;
 
-        const summary = dashboardResponse.data?.summary || {};
+        // Build summary from individual count endpoints
+        const summary = {
+          totalVehicles: vehicleCountRes.data?.totalVehicles || 0,
+          totalDrivers: driverCountRes.data?.totalDrivers || 0,
+          fleetManagers: fleetManagerCountRes.data?.fleetManagers || 0,
+          vehiclesUnderMaintenance: maintenanceCountRes.data?.vehiclesUnderMaintenance || 0,
+          compliantVehicles: complianceRes.data?.summary?.compliantVehicles || 0,
+          nonCompliantVehicles: complianceRes.data?.summary?.nonCompliant || 0,
+          upcomingExpiries: expiryRes.data?.expiries?.length || 0,
+        };
+
         setDashboardSummary({ ...defaultSummary, ...summary });
-        setFleetComplianceData(complianceResponse.data?.vehicles || []);
-        setUpcomingExpiryData(expiryResponse.data?.expiries || []);
-        setRecentNotifications(dashboardResponse.data?.notifications || []);
+        setFleetComplianceData(complianceRes.data?.vehicles || []);
+        setUpcomingExpiryData(expiryRes.data?.expiries || []);
+        setRecentNotifications([]);
       } catch {
         if (isMounted) {
           setError('Unable to load fleet data from the backend. Please verify the API server and database connection.');
