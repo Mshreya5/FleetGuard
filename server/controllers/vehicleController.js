@@ -364,7 +364,6 @@ const deleteVehicle = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
 // COUNT TOTAL VEHICLES
 const getVehicleCount = async (req, res) => {
   try {
@@ -394,8 +393,6 @@ const getMaintenanceCount = async (req, res) => {
   }
 };
 
-=======
->>>>>>> origin/dev
 module.exports = {
   getVehicles,
   getVehicle,
@@ -403,9 +400,6 @@ module.exports = {
   updateVehicle,
   deleteVehicle,
   recalculateComplianceStatus,
-<<<<<<< HEAD
   getVehicleCount,
   getMaintenanceCount,
-=======
->>>>>>> origin/dev
 };

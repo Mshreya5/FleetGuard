@@ -18,7 +18,6 @@ const connectDB = async () => {
   try {
     const conn = await mongoose.connect(uri, {
       dbName: 'fleetguard',
-<<<<<<< HEAD
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
       socketTimeoutMS: 45000,
@@ -44,13 +43,6 @@ const connectDB = async () => {
       console.error('[FleetGuard Unified Backend] MongoDB connection error:', err.message);
     });
     
-=======
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 5000
-    });
-    console.log(`[FleetGuard Unified Backend] MongoDB Connected: ${conn.connection.host} / DB: ${conn.connection.name}`);
-    
->>>>>>> origin/dev
     // Auto-clean legacy MongoDB indexes
     try {
       const vehColl = conn.connection.collection('vehicles');
@@ -70,7 +62,6 @@ const connectDB = async () => {
     try {
       const fallbackConn = await mongoose.connect("mongodb://127.0.0.1:27017/fleetguard", {
         dbName: 'fleetguard',
-<<<<<<< HEAD
         serverSelectionTimeoutMS: 30000,
         connectTimeoutMS: 30000,
         socketTimeoutMS: 45000,
@@ -80,10 +71,6 @@ const connectDB = async () => {
         retryReads: true,
         w: 'majority',
         family: 4
-=======
-        serverSelectionTimeoutMS: 5000,
-        connectTimeoutMS: 5000
->>>>>>> origin/dev
       });
       console.log(`[FleetGuard Unified Backend] Connected to local MongoDB fallback: ${fallbackConn.connection.host}`);
       return fallbackConn;
